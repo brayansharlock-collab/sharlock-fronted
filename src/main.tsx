@@ -1,10 +1,18 @@
 import { StrictMode } from 'react'
+import { ConfigProvider } from 'antd'
 import { createRoot } from 'react-dom/client'
-import './index.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ConfigProvider
+      theme={{
+        token: {
+          fontFamily: 'Lora, serif', // Global: títulos y párrafos
+        },
+      }}
+    >
+      <App />
+    </ConfigProvider>
   </StrictMode>,
 )
