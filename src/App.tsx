@@ -1,25 +1,33 @@
 import './index.css'
+
+import Home from './pages/home';
 import Login from "./pages/login"
+
+
 import { ProductCard } from "./components/ProductCard";
 
 
 function App() {
   return (
     <>
-      <Login
+    <Home />
+
+      {/* <Login
         onSwitchToRegister={() => {
           console.log("Ir a registro");
         }}
         onSwitchToForgot={() => {
           console.log("Ir a recuperar contraseña");
         }}
-      />
+      /> */}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-          gap: "1rem", // 24px, equivalente a gap-6
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "2rem", // 24px, equivalente a gap-6
+          width: "80%",
+          padding: 30
         }}
       >
         <ProductCard
