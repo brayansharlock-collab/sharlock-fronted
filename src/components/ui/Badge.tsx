@@ -27,7 +27,7 @@ export default function BadgeNuevo({ isNew }: { isNew: boolean }) {
         backgroundColor: "#ef4444",
         color: "white",
         padding: "0.25rem 0.5rem",
-        borderRadius: "0.5rem",
+        borderRadius: "0.8rem",
         fontWeight: "bold"
       }}
     >
