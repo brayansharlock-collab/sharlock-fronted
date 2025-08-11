@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, List } from "antd";
+import { Input, List, Dropdown, Menu, Button } from "antd";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
 
 interface SearchBarAntdProps {
@@ -14,8 +14,8 @@ export const SearchBarAntd: React.FC<SearchBarAntdProps> = ({
   className = "",
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [visible, setVisible] = useState(false);
 
   // Generar sugerencias
   const generateSuggestions = (term: string) => {
@@ -24,11 +24,11 @@ export const SearchBarAntd: React.FC<SearchBarAntdProps> = ({
     const allTerms = new Set<string>();
 
     products.forEach((product) => {
-      if (product.name.toLowerCase().includes(term.toLowerCase())) {
+      if (product.name?.toLowerCase().includes(term.toLowerCase())) {
         allTerms.add(product.name);
       }
 
-      const words = product.name.toLowerCase().split(" ");
+      const words = product.name?.toLowerCase().split(" ") || [];
       words.forEach((word: string) => {
         if (word.includes(term.toLowerCase()) && word.length > 2) {
           allTerms.add(word);
@@ -57,16 +57,17 @@ export const SearchBarAntd: React.FC<SearchBarAntdProps> = ({
       .slice(0, 6);
   };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
 
-    if (term.trim()) {
-      const newSuggestions = generateSuggestions(term);
+    if (value.trim()) {
+      const newSuggestions = generateSuggestions(value);
       setSuggestions(newSuggestions);
-      setShowSuggestions(true);
+      setVisible(true);
     } else {
-      setShowSuggestions(false);
       setSuggestions([]);
+      setVisible(false);
     }
   };
 
@@ -75,13 +76,13 @@ export const SearchBarAntd: React.FC<SearchBarAntdProps> = ({
 
     const results = products.filter(
       (product) =>
-        product.name.toLowerCase().includes(term.toLowerCase()) ||
+        product.name?.toLowerCase().includes(term.toLowerCase()) ||
         (product.category &&
           product.category.toLowerCase().includes(term.toLowerCase()))
     );
 
     onSearch(term, results);
-    setShowSuggestions(false);
+    setVisible(false);
   };
 
   const selectSuggestion = (suggestion: string) => {
@@ -91,85 +92,91 @@ export const SearchBarAntd: React.FC<SearchBarAntdProps> = ({
 
   const clearSearch = () => {
     setSearchTerm("");
-    setShowSuggestions(false);
     setSuggestions([]);
+    setVisible(false);
   };
 
-  // Cerrar sugerencias si se hace clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest(".search-container")) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handlePressEnter = () => {
+    performSearch(searchTerm);
+  };
+
+  const handleVisibleChange = (flag: boolean) => {
+    // No cerrar si el input está enfocado y hay texto
+    if (!searchTerm) {
+      setVisible(flag);
+    } else {
+      setVisible(flag && !!searchTerm);
+    }
+  };
 
   return (
-    <div className={`relative search-container ${className}`}>
-      <div className="relative">
-        <Input
-          value={searchTerm}
-          placeholder="Buscador"
-          prefix={<SearchOutlined className="text-gray-400" />}
-          suffix={
-            searchTerm && (
-              <CloseOutlined
-                onClick={clearSearch}
-                className="cursor-pointer text-gray-400 hover:text-gray-600"
-              />
-            )
-          }
-          onChange={(e) => handleSearch(e.target.value)}
-          onPressEnter={() => performSearch(searchTerm)}
-          onFocus={() => searchTerm && setShowSuggestions(true)}
-          className="!pl-10 !pr-10 w-full border-gray-300 focus:border-gray-500 focus:ring-gray-500"
-        />
-      </div>
-
-      {/* Dropdown de sugerencias */}
-      {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1 max-h-64 overflow-y-auto">
-          <List
-            dataSource={suggestions}
-            renderItem={(suggestion) => (
-              <List.Item
-                className="cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => selectSuggestion(suggestion)}
-              >
-                <SearchOutlined className="text-gray-400 mr-2" />
-                <span className="truncate">
+    <Dropdown
+      menu={{
+        items: suggestions.length > 0
+          ? suggestions.map((suggestion, index) => ({
+            key: index,
+            label: (
+              <>
+                <SearchOutlined style={{ marginRight: 8, color: "#bfbfbf" }} />
+                <span>
                   {suggestion
                     .split(new RegExp(`(${searchTerm})`, "gi"))
                     .map((part, idx) =>
                       part.toLowerCase() === searchTerm.toLowerCase() ? (
-                        <span key={idx} className="font-semibold text-gray-900">
+                        <strong key={idx} style={{ fontWeight: 600 }}>
                           {part}
-                        </span>
+                        </strong>
                       ) : (
                         part
                       )
                     )}
                 </span>
-              </List.Item>
-            )}
-          />
-        </div>
-      )}
+              </>
+            ),
+            onClick: () => selectSuggestion(suggestion),
+          }))
+          : [
+            {
+              key: "no-results",
+              disabled: true,
+              label: (
+                <div style={{ textAlign: "center", color: "#ccc" }}>
+                  <SearchOutlined style={{ marginBottom: 4, opacity: 0.5 }} />
+                  <br />
+                  <small> {searchTerm ? `No se encontraron sugerencias para ${searchTerm}`: "Escribe lo que deseas buscar" }</small>
+                </div>
+              ),
+            },
+          ],
+      }}
+      open={visible}
+      onOpenChange={handleVisibleChange}
+      placement="bottomLeft"
+      overlayStyle={{ width: "auto" }}
+      destroyOnHidden
+    >
+      <div
+        className={className}
+        style={{ display: "inline-block", width: "100%" }}
+      >
+        <Input
+          placeholder="Buscador"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onPressEnter={handlePressEnter}
+          prefix={<SearchOutlined />}
+          suffix={
+            searchTerm ? (
+              <CloseOutlined
+                onClick={clearSearch}
+                style={{ cursor: "pointer" }}
+              />
+            ) : null
+          }
+          style={{ width: "100%" }}
+        />
+      </div>
+    </Dropdown>
 
-      {/* No hay sugerencias */}
-      {showSuggestions && searchTerm && suggestions.length === 0 && (
-        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1">
-          <div className="p-4 text-center text-gray-500">
-            <SearchOutlined className="text-xl mb-2 opacity-50" />
-            <p className="text-sm">
-              No se encontraron sugerencias para "{searchTerm}"
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
   );
 };

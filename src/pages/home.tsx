@@ -1,6 +1,5 @@
 import React from "react";
 import { Carousel, Row, Col, Card } from "antd";
-import AnimatedNav from "../components/nav";
 
 const slides = [
     {
@@ -21,12 +20,19 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
     return result;
 }
 
-const groupedCategories = chunkArray(categories, 4);
+function getResponsiveChunkSize(): number {
+    const width = window.innerWidth;
+    if (width < 768) return 2;
+    if (width < 1024) return 3;
+    return 4;
+}
+
+let groupedCategories = chunkArray(categories, getResponsiveChunkSize());
+window.addEventListener('resize', () => {groupedCategories = chunkArray(categories, getResponsiveChunkSize());});
 
 const Home: React.FC = () => {
     return (
         <div style={{ position: "relative" }}>
-            <AnimatedNav />
             {/* Slider Principal */}
             <Carousel dots={false} arrows autoplay>
                 {slides.map((slide, i) => (
@@ -42,8 +48,10 @@ const Home: React.FC = () => {
                                 justifyContent: "center",
                                 flexDirection: "column",
                                 textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+                                color: "white"
                             }}
                         >
+                            videos proocionales
                             {/* Difuminado */}
                             <div
                                 style={{

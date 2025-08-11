@@ -1,16 +1,22 @@
 import './index.css'
 
 import Home from './pages/home';
-import Login from "./pages/login"
+// import Login from "./pages/login"
 
 
 import { ProductCard } from "./components/ProductCard";
+import { SearchBarAntd } from './components/Search';
+import AnimatedNav from './components/nav';
 
 
 function App() {
+
+
   return (
     <>
-    <Home />
+      {/* pagina Principal */}
+      <AnimatedNav />
+      <Home />
 
       {/* <Login
         onSwitchToRegister={() => {
@@ -44,33 +50,7 @@ function App() {
             console.log(`Eliminar producto con ID ${id}`);
           }}
         />
-        <ProductCard
-          id={1}
-          name="Camiseta Oversize"
-          price={29.99}
-          quantity={2}
-          image='https://cuerosvelezco.vtexassets.com/arquivos/ids/293997/1039854-20-04-Top-de-cuero.jpg?v=638866494147530000'
-          updateQuantity={(id, newQty) => {
-            console.log(`Actualizar producto con ID ${id} a cantidad: ${newQty}`);
-          }}
-          removeItem={(id) => {
-            console.log(`Eliminar producto con ID ${id}`);
-          }}
-        />
-        <ProductCard
-          id={1}
-          name="Camiseta Oversize"
-          price={29.99}
-          quantity={2}
-          isNew={true}
-          image='https://cuerosvelezco.vtexassets.com/arquivos/ids/293957/1039842-09-01-Vestido-maxi.jpg?v=638866474641530000'
-          updateQuantity={(id, newQty) => {
-            console.log(`Actualizar producto con ID ${id} a cantidad: ${newQty}`);
-          }}
-          removeItem={(id) => {
-            console.log(`Eliminar producto con ID ${id}`);
-          }}
-        />
+
         <ProductCard
           id={1}
           name="Camiseta Oversize"
