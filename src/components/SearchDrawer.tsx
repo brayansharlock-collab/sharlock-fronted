@@ -28,7 +28,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({
 
     return (
         <>
-            {/* Ícono de búsqueda animado */}
+            {/* Ícono de búsqueda */}
             <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -60,14 +60,14 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({
                     <CloseOutlined style={{ color: "#1f1f1f", fontSize: "16px" }} />
                 }
                 styles={{
-                    body: { padding: 0, backgroundColor: "#ff" },
+                    body: { padding: 0, backgroundColor: "#ff", display: "flex", flexDirection: "column" },
                     header: { borderBottom: "1px solid #e6e1d7", padding: "16px 24px" },
                 }}
                 maskClosable
             >
                 {/* Barra de búsqueda dentro del Drawer */}
                 <div style={{ padding: "24px", backgroundColor: "#fff" }}>
-                    <SearchBarAntd
+                    <SearchBarAntd 
                         products={products}
                         onSearch={(term, results) => {
                             onSearch(term, results);
@@ -77,29 +77,24 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({
                     />
                 </div>
 
-                {/* Espacio para mostrar resultados (opcional) */}
                 <div
                     style={{
-                        padding: "24px",
-                        color: "#666",
-                        fontSize: "14px",
-                        textAlign: "center",
-                        margin: "40px auto",
-                        width: "100%",
+                        // width: "100%",
+                        position: "absolute",
+                        top: "20%",
+                        left: "20%",
+                        transform: "translate(20% 20%)"
                     }}
                 >
                     <img
                         src="src/assets/ilustrations/search.svg"
                         alt="search"
                         style={{
-                            width: "50%",
-                            maxWidth: "300px",
+                            width: "80%",
+                            maxWidth: "400px",
                             height: "auto",
                         }}
                     />
-                    <p style={{ marginTop: "16px" }}>
-                        Empieza a escribir para buscar productos
-                    </p>
                 </div>
             </Drawer>
         </>
