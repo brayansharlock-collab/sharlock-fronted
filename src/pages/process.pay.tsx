@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card, Steps, Button, Row, Col } from "antd";
 import { useNavigate } from "react-router-dom";
+import { Card, Steps, Button, Row, Col } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Importar los componentes de cada paso

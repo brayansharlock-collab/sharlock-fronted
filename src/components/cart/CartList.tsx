@@ -1,5 +1,3 @@
-"use client";
-
 import { Button, Card, Divider, Empty, List, Popconfirm } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { AnimatePresence } from "framer-motion";

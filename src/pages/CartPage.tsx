@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Col, Row } from "antd";
 import type { CartItem } from "../components/cart/types";

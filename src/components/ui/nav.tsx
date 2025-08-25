@@ -11,11 +11,10 @@ const AnimatedNav: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const isHome = location.pathname === '/';
-    
+
     const { scrollY } = useScroll();
     const [cartCount, setCartCount] = useState(2);
     const [isScrolled, setIsScrolled] = useState(false);
-    
 
     useEffect(() => {
         if (!isHome) {
@@ -80,7 +79,7 @@ const AnimatedNav: React.FC = () => {
                 padding: '0 20px',
             }}
         >
-            <SearchDrawer products={mockProducts} onSearch={handleSearch} isScrolled={isScrolled}/>
+            <SearchDrawer products={mockProducts} onSearch={handleSearch} isScrolled={isScrolled} />
 
             <motion.span
                 style={{
@@ -122,6 +121,7 @@ const AnimatedNav: React.FC = () => {
                         color: isScrolled ? '#000' : '#fff',
                         cursor: 'pointer',
                     }}
+                    onClick={() => { navigate("/Profile") }}
                 />
 
                 <Badge count={cartCount} size="small">
@@ -131,7 +131,7 @@ const AnimatedNav: React.FC = () => {
                             color: isScrolled ? '#000' : '#fff',
                             cursor: 'pointer',
                         }}
-                        onClick={() => {navigate("/CarPage")}}
+                        onClick={() => { navigate("/CarPage") }}
                     />
                 </Badge>
 

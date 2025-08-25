@@ -1,9 +1,7 @@
 import React from "react";
 import { Button, Tooltip } from "antd";
 import { AnimatePresence } from "framer-motion";
-import { HeartOutlined, ShoppingCartOutlined, StarOutlined } from "@ant-design/icons";
-// import imgDefault from "../assets/landscape-placeholder-svgrepo-com.svg";
-import imgDefault from "../../assets/download.jpeg";
+import { HeartOutlined, StarOutlined } from "@ant-design/icons";
 import BadgeNuevo from "./Badge";
 
 interface ProductCardProps {
@@ -69,7 +67,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           ) : (
             <img
-              src={allImages[0] || imgDefault}
+              src={allImages[0] || "../../assets/landscape-placeholder-svgrepo-com.svg"}
               alt={name}
               style={{
                 width: "100%",

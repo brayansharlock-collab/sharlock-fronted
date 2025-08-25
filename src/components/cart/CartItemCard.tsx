@@ -1,5 +1,3 @@
-"use client";
-
 import { Button, InputNumber, List, Popconfirm, Tag, Typography } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";

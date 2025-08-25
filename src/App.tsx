@@ -10,6 +10,7 @@ import Home from "./pages/home";
 import ProcessPay from './pages/process.pay';
 import CartPage from './pages/CartPage';
 import AnimatedNav from './components/ui/nav';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
 
 
         <Route path="/Checkout" element={<ProcessPay />} />
+        <Route path="/Profile" element={<ProfilePage />} />
         <Route path="/CarPage" element={<CartPage />} />
 
         <Route path="/login" element={<Login
