@@ -1,10 +1,10 @@
 import React from "react";
 import { Button, Tooltip } from "antd";
-import BadgeNuevo from "./ui/Badge";
 import { AnimatePresence } from "framer-motion";
 import { HeartOutlined, ShoppingCartOutlined, StarOutlined } from "@ant-design/icons";
 // import imgDefault from "../assets/landscape-placeholder-svgrepo-com.svg";
-import imgDefault from "../assets/download.jpeg";
+import imgDefault from "../../assets/download.jpeg";
+import BadgeNuevo from "./Badge";
 
 interface ProductCardProps {
   id: number;

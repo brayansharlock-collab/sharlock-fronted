@@ -1,14 +1,16 @@
 import { Badge } from 'antd';
 import { motion } from 'framer-motion';
 import { useScroll } from 'framer-motion';
-import { SearchDrawer } from './SearchDrawer';
-// import { useLocation } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchDrawer } from './SearchDrawer';
 
 const AnimatedNav: React.FC = () => {
-    // const location = useLocation();
-    // const isHome = location.pathname === '/';
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isHome = location.pathname === '/';
     
     const { scrollY } = useScroll();
     const [cartCount, setCartCount] = useState(2);
@@ -16,10 +18,10 @@ const AnimatedNav: React.FC = () => {
     
 
     useEffect(() => {
-        // if (!isHome) {
-        //     setIsScrolled(true);
-        //     return;
-        // }
+        if (!isHome) {
+            setIsScrolled(true);
+            return;
+        }
 
         const unsubscribe = scrollY.on('change', (latest) => {
             setIsScrolled(latest > 10);
@@ -28,7 +30,6 @@ const AnimatedNav: React.FC = () => {
         return () => unsubscribe();
     }, [scrollY]);
 
-    // Animación del texto que actúa como logo
     const textVariants = {
         initial: {
             scale: 4,
@@ -130,6 +131,7 @@ const AnimatedNav: React.FC = () => {
                             color: isScrolled ? '#000' : '#fff',
                             cursor: 'pointer',
                         }}
+                        onClick={() => {navigate("/CarPage")}}
                     />
                 </Badge>
 

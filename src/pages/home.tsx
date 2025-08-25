@@ -1,5 +1,6 @@
 import React from "react";
 import { Carousel, Row, Col, Card } from "antd";
+import AnimatedNav from "../components/ui/nav";
 
 const slides = [
     {
@@ -33,6 +34,8 @@ window.addEventListener('resize', () => {groupedCategories = chunkArray(categori
 const Home: React.FC = () => {
     return (
         <div style={{ position: "relative" }}>
+        <AnimatedNav />
+
             {/* Slider Principal */}
             <Carousel dots={false} arrows autoplay>
                 {slides.map((slide, i) => (

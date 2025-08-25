@@ -7,6 +7,9 @@ import ProtectedRoute from "./routers/ProtectedRoute";
 //components and pages
 import Login from "./pages/login";
 import Home from "./pages/home";
+import ProcessPay from './pages/process.pay';
+import CartPage from './pages/CartPage';
+import AnimatedNav from './components/ui/nav';
 
 function App() {
   return (
@@ -14,6 +17,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
+
+
+        <Route path="/Checkout" element={<ProcessPay />} />
+        <Route path="/CarPage" element={<CartPage />} />
 
         <Route path="/login" element={<Login
           onSwitchToRegister={() => {
