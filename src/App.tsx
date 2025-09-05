@@ -18,12 +18,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-
-
-        <Route path="/Checkout" element={<ProcessPay />} />
-        <Route path="/Profile" element={<ProfilePage />} />
-        <Route path="/CarPage" element={<CartPage />} />
-
         <Route path="/login" element={<Login
           onSwitchToRegister={() => {
             console.log("Ir a registro");
@@ -34,10 +28,26 @@ function App() {
         />} />
 
         <Route
-          path="/dashboard"
+          path="/checkout"
           element={
             <ProtectedRoute>
-              <Route path="/" element={<Home />} />
+              <ProcessPay />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            // <ProtectedRoute>
+              <ProfilePage />
+            // </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/CarPage"
+          element={
+            <ProtectedRoute>
+              <CartPage />
             </ProtectedRoute>
           }
         />

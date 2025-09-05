@@ -1,9 +1,10 @@
 import axios from "axios";
+import { API_URL_ALL } from "./urls";
 import { tokenStorage } from "../utils/token";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
-  withCredentials: true,
+  baseURL: API_URL_ALL.BASE_URL,
+  // withCredentials: true,
 });
 
 api.interceptors.request.use(
@@ -28,10 +29,10 @@ api.interceptors.response.use(
       try {
         const refreshToken = tokenStorage.getRefreshToken();
         if (refreshToken) {
-          const { data } = await api.post("/auth/refresh", { token: refreshToken });
+          const { data } = await api.post(API_URL_ALL.REFRESH, { token: refreshToken });
           tokenStorage.setAccessToken(data.accessToken);
 
-          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+          originalRequest.headers.Authorization = `JWT ${data.accessToken}`;
           return api(originalRequest);
         }
       } catch (err) {

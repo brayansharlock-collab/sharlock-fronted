@@ -11,7 +11,7 @@ import {
   SearchOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
-import { Card, Typography, Button, Space, Grid } from "antd";
+import { Card, Button, Space, Grid } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Importar los componentes de cada sección
@@ -22,7 +22,6 @@ import AddressList from "../components/profile/AddressList";
 import OrderHistory from "../components/profile/OrderHistory";
 import ProductTracking from "../components/profile/ProductTracking";
 
-const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
 const menuItems = [
@@ -143,12 +142,10 @@ export default function ProfilePage() {
             style={{
               borderRadius: "1.25rem",
               boxShadow: "0 8px 24px rgba(226, 222, 199, 0.93)",
-              height: "65vh",
+              height: "auto",
+              overflowY: "auto",
             }}
           >
-            <Title level={4} style={{ marginBottom: "1rem" }}>
-              {menuItems.find((item) => item.key === selectedKey)?.label}
-            </Title>
             {renderContent()}
           </Card>
         </motion.div>
