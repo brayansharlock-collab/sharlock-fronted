@@ -1,8 +1,9 @@
-import React from "react";
-import { Button, Tooltip } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, message, Tooltip } from "antd";
 import { AnimatePresence } from "framer-motion";
-import { HeartOutlined, StarOutlined } from "@ant-design/icons";
+import { HeartFilled, HeartOutlined, StarOutlined } from "@ant-design/icons";
 import BadgeNuevo from "./Badge";
+import { productService } from "../../service/productService";
 
 interface ProductCardProps {
   id: number;
@@ -10,12 +11,13 @@ interface ProductCardProps {
   image?: string;
   images?: string[];
   price: number;
-  quantity: number;
+  quantity?: number; // Opcional
   rating?: number;
   originalPrice?: number;
   isNew?: boolean;
-  updateQuantity: (id: number, newQty: number) => void;
-  removeItem: (id: number) => void;
+  initialIsFavorite?: boolean;
+  updateQuantity?: (id: number, newQty: number) => void;
+  removeItem?: (id: number) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -27,9 +29,45 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   rating = 0,
   originalPrice,
   isNew,
+  initialIsFavorite = false,
 }) => {
-  const [hover, setHover] = React.useState(false);
+  const [hover, setHover] = useState(false);
   const allImages = [image, ...images].filter(Boolean) as string[];
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkFavorite = async () => {
+      try {
+        const favorite = await productService.isFavorite(id);
+        setIsFavorite(favorite);
+      } catch (error) {
+        console.error("Error checking favorite status:", error);
+      }
+    };
+    checkFavorite();
+  }, [id]);
+
+  const toggleFavorite = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      if (isFavorite) {
+        await productService.removeFromFavorites(id);
+        setIsFavorite(false);
+        message.success("Eliminado de favoritos");
+      } else {
+        await productService.addToFavorites(id);
+        setIsFavorite(true);
+        message.success("Agregado a favoritos");
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Error al actualizar favoritos");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -92,12 +130,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 right: "0.5rem",
                 borderRadius: "0.8rem",
                 backdropFilter: "blur(10px)",
-                background: "transparent",
-                border: "none"
+                background: "rgba(255, 255, 255, 0.7)",
+                border: "1px solid rgba(255, 255, 255, 0.5)",
+                transition: "all 0.2s ease",
               }}
-            >
-              <HeartOutlined style={{ height: "1rem", width: "1rem", }} />
-            </Button>
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite();
+              }}
+              icon={isFavorite ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
+              loading={loading}
+              type={isFavorite ? "primary" : "default"}
+            />
           </Tooltip>
 
 

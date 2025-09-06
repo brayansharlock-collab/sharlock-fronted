@@ -61,11 +61,8 @@ export const addressService = {
     return data;
   },
 
-
   getDepartments: async (): Promise<Department[]> => {
     const { data } = await api.get(API_URL_ALL.DEPARMENT);
-    console.log(data.data.results);
-    
     return data.data.results;
   },
   getAddressTypes: async (): Promise<AddressType[]> => {

@@ -12,6 +12,9 @@ type Props = {
     clearCart: () => void;
 };
 
+import errorGif from "../../assets/ilustrations/error.gif";
+
+
 export function CartList({ items, updateQty, removeItem, clearCart }: Props) {
     return (
         <Card
@@ -24,10 +27,21 @@ export function CartList({ items, updateQty, removeItem, clearCart }: Props) {
             style={{ borderRadius: 12 }}
         >
             {items.length === 0 ? (
-                <Empty
-                    description="Tu carrito está vacío"
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
+                <div style={{ textAlign: "center", padding: "48px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                    <Empty
+                        imageStyle={{
+                            height: 160,
+                            marginBottom: 16,
+                            opacity: 0.9,
+                        }}
+                        description={
+                            <span style={{ fontSize: '16px', color: '#1f2937', fontWeight: 500 }}>
+                                Tu carrito está vacío
+                            </span>
+                        }
+                        image={errorGif}
+                    />
+                </div>
             ) : (
                 <List
                     itemLayout="horizontal"

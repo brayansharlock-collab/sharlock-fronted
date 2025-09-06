@@ -80,7 +80,7 @@ const AnimatedNav: React.FC = () => {
                     padding: '0 20px',
                 }}
             >
-                <SearchDrawer products={mockProducts} onSearch={handleSearch} isScrolled={isScrolled} />
+                <SearchDrawer onSearch={handleSearch} isScrolled={isScrolled} />
 
                 <motion.span
                     style={{
@@ -160,7 +160,7 @@ const AnimatedNav: React.FC = () => {
                 }}
             >
                 {/* SearchDrawer */}
-                <SearchDrawer products={mockProducts} onSearch={handleSearch} isScrolled={isScrolled} />
+                <SearchDrawer onSearch={handleSearch} isScrolled={isScrolled} />
 
                 {/* Logo */}
                 <span

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Input, List, Dropdown, Menu, Button } from "antd";
+import React, { useState } from "react";
+import { Input, Dropdown } from "antd";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
 
 interface SearchBarAntdProps {
