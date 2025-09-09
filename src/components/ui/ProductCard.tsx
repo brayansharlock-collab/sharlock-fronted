@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Button, message, Tooltip } from "antd";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { HeartFilled, HeartOutlined, StarOutlined } from "@ant-design/icons";
 import BadgeNuevo from "./Badge";
 import { productService } from "../../service/productService";
+import { Link } from "react-router-dom";
 
 interface ProductCardProps {
   id: number;
@@ -70,27 +71,60 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div
-      key={id}
-      style={{
-        transition: "box-shadow 0.2s ease",
-        width: "15em",
-        borderRadius: "1.2rem",
-        backgroundColor: "white",
-        cursor: "pointer",
-      }}
+    <Link
+      to={`/producto/${name}/${id}`}
+      style={{ textDecoration: "none", color: "inherit", display: "block" }}
     >
-      <div style={{ padding: 0 }}>
-        <div
-          style={{ position: "relative" }}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-        >
-          {allImages.length > 1 ? (
-            <div style={{ position: "relative", overflow: "hidden" }}>
-              <img
-                src={hover ? allImages[1] : allImages[0]}
+      <div
+        key={id}
+        style={{
+          transition: "box-shadow 0.2s ease",
+          width: "15em",
+          borderRadius: "1.2rem",
+          backgroundColor: "white",
+          cursor: "pointer",
+        }}
+      >
+        <div style={{ padding: 0 }}>
+          <div
+            style={{ position: "relative" }}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+          >
+            {allImages.length > 1 ? (
+              <div style={{ position: "relative", overflow: "hidden", height: "20rem" }}>
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={hover ? allImages[1] : allImages[0]} // cambia key para animar entre imágenes
+                    src={hover ? allImages[1] : allImages[0]}
+                    alt={name}
+                    loading="lazy"
+                    initial={{ opacity: 0, scale: 1.02 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    style={{
+                      width: "100%",
+                      height: "20rem",
+                      objectFit: "cover",
+                      borderTopLeftRadius: "1.2rem",
+                      borderTopRightRadius: "1.2rem",
+                      cursor: "pointer",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
+                </AnimatePresence>
+              </div>
+            ) : (
+              <motion.img
+                src={allImages[0] || "../../assets/landscape-placeholder-svgrepo-com.svg"}
                 alt={name}
+                loading="lazy"
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
                 style={{
                   width: "100%",
                   height: "20rem",
@@ -98,112 +132,95 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   borderTopLeftRadius: "1.2rem",
                   borderTopRightRadius: "1.2rem",
                   cursor: "pointer",
-                  transition: "transform 0.3s ease, opacity 0.3s ease",
-                  opacity: hover ? 0.85 : 1,
                 }}
               />
-            </div>
-          ) : (
-            <img
-              src={allImages[0] || "../../assets/landscape-placeholder-svgrepo-com.svg"}
-              alt={name}
-              style={{
-                width: "100%",
-                height: "20rem",
-                objectFit: "cover",
-                borderTopLeftRadius: "1.2rem",
-                borderTopRightRadius: "1.2rem",
-                cursor: "pointer",
-              }}
-            />
-          )}
+            )}
 
-          <AnimatePresence>
-            <BadgeNuevo isNew={!isNew} />
-          </AnimatePresence>
+            <AnimatePresence>
+              <BadgeNuevo isNew={!isNew} />
+            </AnimatePresence>
 
-          <Tooltip title="Agregar a favoritos">
-            <Button
-              style={{
-                position: "absolute",
-                top: "0.5rem",
-                right: "0.5rem",
-                borderRadius: "0.8rem",
-                backdropFilter: "blur(10px)",
-                background: "rgba(255, 255, 255, 0.7)",
-                border: "1px solid rgba(255, 255, 255, 0.5)",
-                transition: "all 0.2s ease",
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFavorite();
-              }}
-              icon={isFavorite ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
-              loading={loading}
-              type={isFavorite ? "primary" : "default"}
-            />
-          </Tooltip>
-
-
-          <div style={{ position: "absolute", background: "linear-gradient(to bottom, transparent, white)", height: "80px", width: "100%", bottom: 0 }} />
-        </div>
-        <div style={{ padding: "1rem" }}>
-          <h4
-            style={{
-              fontWeight: 500,
-              color: "#1f2937",
-              marginBottom: "0.5rem",
-            }}
-          >
-            {name}
-          </h4>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
-            {[...Array(5)].map((_, i) => (
-              <StarOutlined
-                key={i}
+            <Tooltip title="Agregar a favoritos">
+              <Button
                 style={{
-                  height: "0.75rem",
-                  width: "0.75rem",
-                  color: i < Math.floor(rating) ? "#facc15" : "#727272ff",
-                  fill: i < Math.floor(rating) ? "#facc15" : "none",
+                  position: "absolute",
+                  top: "0.5rem",
+                  right: "0.5rem",
+                  borderRadius: "0.8rem",
+                  backdropFilter: "blur(10px)",
+                  background: "rgba(255, 255, 255, 0.7)",
+                  border: "1px solid rgba(255, 255, 255, 0.5)",
+                  transition: "all 0.2s ease",
                 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite();
+                }}
+                icon={isFavorite ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
+                loading={loading}
+                type={isFavorite ? "primary" : "default"}
               />
-            ))}
-            <span style={{ fontSize: "0.75rem", color: "#6b7280", marginLeft: "0.25rem" }}>
-              ({rating})
-            </span>
+            </Tooltip>
+
+
+            <div style={{ position: "absolute", background: "linear-gradient(to bottom, transparent, white)", height: "80px", width: "100%", bottom: 0 }} />
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "0.75rem",
-            }}
-          >
-            <div>
-              <span style={{ fontSize: "1.125rem", fontWeight: "bold", color: "#1f2937" }}>
-                ${price}
-              </span>
-              {originalPrice && (
-                <span
+          <div style={{ padding: "1rem" }}>
+            <h4
+              style={{
+                fontWeight: 500,
+                color: "#1f2937",
+                marginBottom: "0.5rem",
+              }}
+            >
+              {name}
+            </h4>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+              {[...Array(5)].map((_, i) => (
+                <StarOutlined
+                  key={i}
                   style={{
-                    fontSize: "0.875rem",
-                    color: "#6b7280",
-                    textDecoration: "line-through",
-                    marginLeft: "0.5rem",
+                    height: "0.75rem",
+                    width: "0.75rem",
+                    color: i < Math.floor(rating) ? "#facc15" : "#727272ff",
+                    fill: i < Math.floor(rating) ? "#facc15" : "none",
                   }}
-                >
-                  ${originalPrice}
+                />
+              ))}
+              <span style={{ fontSize: "0.75rem", color: "#6b7280", marginLeft: "0.25rem" }}>
+                ({rating})
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "0.75rem",
+              }}
+            >
+              <div>
+                <span style={{ fontSize: "1.125rem", fontWeight: "bold", color: "#1f2937" }}>
+                  ${price}
                 </span>
-              )}
+                {originalPrice && (
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      color: "#6b7280",
+                      textDecoration: "line-through",
+                      marginLeft: "0.5rem",
+                    }}
+                  >
+                    ${originalPrice}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-
-
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

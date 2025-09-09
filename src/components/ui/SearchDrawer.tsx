@@ -120,9 +120,9 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled, onSearch
     }, [filteredResults, products, selectedCategories, selectedSubcategories]);
 
     const handleSearch = (term: string, results: Product[]) => {
-        setSearchTerm(term); // guardamos el término
-        setFilteredResults(results); // guardamos resultados que vienen del SearchBar
-        onSearch?.(term, results); // si el padre quiere escuchar
+        setSearchTerm(term);
+        setFilteredResults(results);
+        onSearch?.(term, results);
     };
 
     const showInitialState = !loading && !searchTerm && selectedCategories.length === 0 && selectedSubcategories.length === 0;

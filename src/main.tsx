@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
       colorText: '#1f2937',           // Color del texto
       colorBgBase: '#ffffff',         // Fondo blanco
       fontFamily: 'Inter, Arial, sans-serif', // Fuente por defecto
-      borderRadius: 8,                // ⭐ Radio de borde global (esto afecta a muchos componentes base)
+      borderRadius: 8,       
     },
     components: {
       Typography: {
@@ -34,6 +34,11 @@ createRoot(document.getElementById('root')!).render(
         // option: {
         //   borderRadius: 8,
         // },
+      },
+       Carousel: {
+        arrowSize: 53,
+        arrowOffset: 50,
+        dotGap: 20              // Carruseles
       },
       DatePicker: {
         borderRadius: 8,              // Calendarios
