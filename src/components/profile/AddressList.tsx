@@ -56,7 +56,7 @@ export default function AddressList() {
 
   const handleSetPrincipal = async (addr: Address) => {
     try {
-      await addressService.patch(addr.id, { is_principal: true });
+      await addressService.update(addr.id, { is_principal: true });
       messageApi.success("Dirección marcada como principal");
       fetchAddresses();
     } catch {

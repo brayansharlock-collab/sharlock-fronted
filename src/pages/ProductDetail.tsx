@@ -2,28 +2,33 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Row, Col, Card, Button, Image, Tag, Carousel, Collapse } from "antd"
+import { Row, Col, Card, Button, Image, Tag, Carousel, Typography } from "antd"
+const { Title } = Typography
 import { ShoppingCartOutlined, HeartOutlined } from "@ant-design/icons"
 import { productService } from "../service/productService"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import type { Variants } from "framer-motion"
 import Silk from "../components/animations/Silk"
 
-const { Panel } = Collapse
+interface StockDetail {
+  id: number
+  size: string
+  color: string
+  quantity: number
+  media: { file: string }[]
+}
 
 interface Product {
   id: number
   name: string
   description: string
   image_cover: string
-  media: { url: string }[]
+  stock_detail: StockDetail[]
   price: string
   discount: string
   active_discount: number
   stock: number
   is_favorite: boolean
-  colors?: string[]
-  sizes?: string[]
 }
 
 const ProductDetail = () => {
@@ -31,14 +36,67 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null)
   const [selectedImage, setSelectedImage] = useState<string>("")
   const [selectedColor, setSelectedColor] = useState<string>("")
-  const [expanded, setExpanded] = useState(false) // Para controlar el Collapse
+  const [selectedSize, setSelectedSize] = useState<string>("")
+
+  // Manejo de selección de color
+  const handleSelectColor = (color: string) => {
+    setSelectedColor(color)
+
+    const validStock = product?.stock_detail.find(
+      (s) => s.color === color && s.size === selectedSize
+    )
+
+    if (!validStock) {
+      const firstValidSize = product?.stock_detail.find((s) => s.color === color)?.size
+      if (firstValidSize) {
+        setSelectedSize(firstValidSize)
+      }
+    }
+
+    const stockWithImage = product?.stock_detail.find(
+      (s) => s.color === color && s.size === (validStock ? selectedSize : product?.stock_detail.find((s) => s.color === color)?.size)
+    )
+    if (stockWithImage?.media?.length) {
+      setSelectedImage(stockWithImage.media[0].file)
+    }
+  }
+
+  // Manejo de selección de talla
+  const handleSelectSize = (size: string) => {
+    setSelectedSize(size)
+
+    const validStock = product?.stock_detail.find(
+      (s) => s.size === size && s.color === selectedColor
+    )
+
+    if (!validStock) {
+      const firstValidColor = product?.stock_detail.find((s) => s.size === size)?.color
+      if (firstValidColor) {
+        setSelectedColor(firstValidColor)
+      }
+    }
+
+    const stockWithImage = product?.stock_detail.find(
+      (s) => s.size === size && s.color === (validStock ? selectedColor : product?.stock_detail.find((s) => s.size === size)?.color)
+    )
+    if (stockWithImage?.media?.length) {
+      setSelectedImage(stockWithImage.media[0].file)
+    }
+  }
 
   useEffect(() => {
     if (id) {
       productService.getById(Number(id)).then((res: Product) => {
         setProduct(res)
-        setSelectedImage(res.image_cover)
-        if (res.colors?.length) setSelectedColor(res.colors[0])
+
+        if (res.stock_detail.length > 0) {
+          const firstStock = res.stock_detail[0]
+          setSelectedImage(firstStock.media[0]?.file || res.image_cover)
+          setSelectedColor(firstStock.color)
+          setSelectedSize(firstStock.size)
+        } else {
+          setSelectedImage(res.image_cover)
+        }
       })
     }
   }, [id])
@@ -48,21 +106,26 @@ const ProductDetail = () => {
   const discountPercent =
     product.active_discount && product.discount !== product.price
       ? Math.round(
-          ((Number(product.discount) - Number(product.price)) / Number(product.discount)) * 100
-        )
+        ((Number(product.discount) - Number(product.price)) / Number(product.discount)) * 100
+      )
       : 0
 
-  const allImages = [product.image_cover, ...product.media.map((m) => m.url)]
+  const allImages = [
+    ...new Set([
+      // product.image_cover,
+      ...product.stock_detail.flatMap((s) => s.media.map((m) => m.file)),
+    ]),
+  ]
+
+  const allSizes = [...new Set(product.stock_detail.map((s) => s.size))]
+  const allColors = [...new Set(product.stock_detail.map((s) => s.color))]
 
   // Animaciones
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      },
+      transition: { staggerChildren: 0.1, delayChildren: 0.3 },
     },
   }
 
@@ -93,7 +156,7 @@ const ProductDetail = () => {
         <Silk speed={10} scale={1} color="#e6e1d7" noiseIntensity={1.5} rotation={0} />
       </motion.div>
 
-      {/* Contenedor principal con animación */}
+      {/* Contenedor principal */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -115,7 +178,7 @@ const ProductDetail = () => {
         }}
       >
         <Row gutter={[32, 32]}>
-          {/* Miniaturas (SM+) */}
+          {/* Miniaturas */}
           <Col xs={0} sm={3}>
             <motion.div
               variants={containerVariants}
@@ -124,24 +187,19 @@ const ProductDetail = () => {
               style={{ display: "flex", flexDirection: "column", gap: 12 }}
             >
               {allImages.map((img, index) => (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                >
+                <motion.div key={index} variants={itemVariants}>
                   <Image
                     src={img}
                     alt={`Vista ${index}`}
                     preview={false}
                     onClick={() => setSelectedImage(img)}
                     style={{
-                      border:
-                        selectedImage === img ? "2px solid #111" : "1px solid #e5e7eb",
+                      border: selectedImage === img ? "2px solid #111" : "1px solid #e5e7eb",
                       borderRadius: 8,
                       cursor: "pointer",
                       objectFit: "cover",
                       width: "100%",
+                      pointerEvents: "none",
                     }}
                   />
                 </motion.div>
@@ -149,17 +207,11 @@ const ProductDetail = () => {
             </motion.div>
           </Col>
 
-          {/* Carrusel móvil (XS) */}
+          {/* Carrusel móvil */}
           <Col xs={24} sm={0}>
             <Carousel autoplay dots>
               {allImages.map((img, index) => (
-                <motion.div
-                  key={index}
-                  variants={imageVariants}
-                  initial="hidden"
-                  animate="visible"
-                  onClick={() => setSelectedImage(img)}
-                >
+                <motion.div key={index} variants={imageVariants} initial="hidden" animate="visible">
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <Image
                       src={img}
@@ -171,7 +223,9 @@ const ProductDetail = () => {
                         objectFit: "contain",
                         margin: "0 auto",
                         width: "100%",
+                        pointerEvents: "none",
                       }}
+                      onClick={() => setSelectedImage(img)}
                     />
                   </div>
                 </motion.div>
@@ -179,7 +233,7 @@ const ProductDetail = () => {
             </Carousel>
           </Col>
 
-          {/* Imagen principal (SM+) */}
+          {/* Imagen principal */}
           <Col xs={0} sm={10}>
             <motion.div variants={imageVariants} initial="hidden" animate="visible">
               <Card style={{ textAlign: "center", position: "relative" }}>
@@ -188,7 +242,7 @@ const ProductDetail = () => {
                   alt={product.name}
                   style={{
                     borderRadius: 12,
-                    maxHeight: "500px",
+                    height: "500px",
                     objectFit: "contain",
                     width: "100%",
                   }}
@@ -207,9 +261,7 @@ const ProductDetail = () => {
           {/* Detalles */}
           <Col xs={24} sm={11}>
             <motion.div variants={itemVariants}>
-              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>
-                {product.name}
-              </h2>
+              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>{product.name}</h2>
 
               {/* Precio */}
               <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
@@ -232,12 +284,52 @@ const ProductDetail = () => {
                 </div>
               </motion.div>
 
-              {/* Medidas */}
+              {/* Colores */}
               <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
-                <p style={{ margin: 0, fontWeight: 500 }}>Medidas</p>
-                <p style={{ margin: 0, color: "#4b5563" }}>
-                  Alto 18cm · Ancho 21cm · Profundo 12cm
-                </p>
+                <p style={{ margin: 0, fontWeight: 500 }}>Color</p>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {allColors.map((color, idx) => (
+                    <Button
+                      key={idx}
+                      onClick={() => handleSelectColor(color)}
+                      style={{
+                        borderRadius: "9999px",
+                        padding: "4px 16px",
+                        fontWeight: 500,
+                        backgroundColor: selectedColor === color ? "#111" : "#f3f4f6",
+                        color: selectedColor === color ? "#fff" : "#111",
+                        border: "1px solid #e5e7eb",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {color}
+                    </Button>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Tallas */}
+              <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
+                <p style={{ margin: 0, fontWeight: 500 }}>Talla</p>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {allSizes.map((size, idx) => (
+                    <Button
+                      key={idx}
+                      onClick={() => handleSelectSize(size)}
+                      style={{
+                        borderRadius: "9999px",
+                        padding: "4px 16px",
+                        fontWeight: 500,
+                        backgroundColor: selectedSize === size ? "#111" : "#f3f4f6",
+                        color: selectedSize === size ? "#fff" : "#111",
+                        border: "1px solid #e5e7eb",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </div>
               </motion.div>
 
               {/* Botón */}
@@ -246,10 +338,7 @@ const ProductDetail = () => {
                   type="default"
                   size="large"
                   icon={<ShoppingCartOutlined />}
-                  style={{
-                    fontWeight: 600,
-                    height: 48,
-                  }}
+                  style={{ fontWeight: 600, height: 48 }}
                   block
                 >
                   AGREGAR AL CARRITO
@@ -258,21 +347,109 @@ const ProductDetail = () => {
             </motion.div>
           </Col>
 
-          {/* Descripción desplegable con animación */}
-         {product.description && (
-                <Collapse
-                  bordered={false}
-                  style={{ background: "#fff", borderRadius: 8 }}
+          {product.description && (
+            <motion.div
+              variants={itemVariants}
+              style={{
+                marginTop: 32,
+                width: "100%",
+                height: 500,
+                borderRadius: 16,
+                overflow: "hidden",
+                background: "#fff",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Row gutter={0}>
+                {/* Información con scroll */}
+                <Col
+                  xs={24}
+                  md={14}
+                  style={{
+                    height: 500,
+                    background: "#e6e1d7",
+                    borderRadius: "16px 0 0 16px",
+                  }}
                 >
-                  <Panel header="See more information" key="1">
-
-
-                    <p style={{ margin: 0, lineHeight: 1.6, color: "#374151" }}>
+                  <div
+                    style={{
+                      padding: "24px",
+                      height: "320px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    <Title
+                      level={2}
+                      style={{
+                        margin: "0 0 12px 0",
+                        fontWeight: 700,
+                        color: "#111827",
+                      }}
+                    >
+                      Detalles del producto
+                    </Title>
+                    <p
+                      style={{
+                        margin: 0,
+                        lineHeight: 1.7,
+                        color: "#374151",
+                        fontSize: "15px",
+                        whiteSpace: "pre-line",
+                      }}
+                    >
                       {product.description}
                     </p>
-                  </Panel>
-                </Collapse>
-              )}
+                  </div>
+                </Col>
+
+                {/* Imagen reducida */}
+                <Col
+                  xs={0}
+                  md={10}
+                  style={{
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#fff",
+                    borderRadius: "0 16px 16px 0",
+                  }}
+                >
+                  {/* Imagen Cover con motion */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8 }}
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: "100%",
+                      backgroundImage: `url(${product.image_cover})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center right",
+                    }}
+                  />
+
+                  {/* Overlay difuminado */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: -100,
+                      width: 200,
+                      height: "100%",
+                      background:
+                        "linear-gradient(to right, #e6e1d7 50%, rgba(230,225,215,0) 100%)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                </Col>
+              </Row>
+            </motion.div>
+          )}
+
+
+
         </Row>
       </motion.div>
     </>
