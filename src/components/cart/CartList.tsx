@@ -29,10 +29,12 @@ export function CartList({ items, updateQty, removeItem, clearCart }: Props) {
             {items.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
                     <Empty
-                        imageStyle={{
-                            height: 160,
-                            marginBottom: 16,
-                            opacity: 0.9,
+                        styles={{
+                            image: {
+                                height: 160,
+                                marginBottom: 16,
+                                opacity: 0.9,
+                            },
                         }}
                         description={
                             <span style={{ fontSize: '16px', color: '#1f2937', fontWeight: 500 }}>

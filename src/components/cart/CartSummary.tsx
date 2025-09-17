@@ -9,12 +9,11 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { useNavigate } from 'react-router-dom';
-
-
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { COP } from "../common/Currency";
 import type { CartItem } from "./types";
+import { cartService } from "../../service/cartService";
 
 const { Title, Text } = Typography;
 
@@ -22,8 +21,11 @@ type Props = {
   items: CartItem[];
   coupon: string;
   setCoupon: (c: string) => void;
-  appliedCoupon: string | null;
-  setAppliedCoupon: (c: string | null) => void;
+  appliedCoupon: {
+    id: number;
+    percentage: number;
+  } | null;
+  setAppliedCoupon: (c: { id: number; percentage: number } | null) => void;
 };
 
 export function CartSummary({
@@ -33,42 +35,62 @@ export function CartSummary({
   appliedCoupon,
   setAppliedCoupon,
 }: Props) {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // Totales
   const { subtotal, discount, iva, total } = useMemo(() => {
     const st = items.reduce((acc, it) => acc + it.price * it.quantity, 0);
     let disc = 0;
-    if (appliedCoupon === "SAVE10") disc = st * 0.1;
-    if (appliedCoupon === "ENVIO0") disc += 15000;
+
+    if (appliedCoupon) {
+      disc = (st * appliedCoupon.percentage) / 100;
+    }
+
     const taxable = Math.max(st - disc, 0);
     const iva19 = taxable * 0.19;
     const tot = taxable + iva19;
+
     return { subtotal: st, discount: disc, iva: iva19, total: tot };
   }, [items, appliedCoupon]);
 
-  const applyCoupon = () => {
-    const code = coupon.trim().toUpperCase();
+  const handleApplyCoupon = async () => {
+    const code = coupon.trim();
     if (!code) return;
-    if (["SAVE10", "ENVIO0"].includes(code)) {
-      setAppliedCoupon(code);
-      message.success(`Cupón aplicado: ${code}`);
-    } else {
+
+    try {
+      const res = await cartService.applyCoupon(code);
+
+      setAppliedCoupon({
+        id: res.coupon_id,
+        percentage: res.percentage,
+      });
+
+      localStorage.setItem(
+        "appliedCoupon",
+        JSON.stringify({ id: res.coupon_id, percentage: res.percentage })
+      );
+
+      message.success(res.message);
+    } catch (err: any) {
       setAppliedCoupon(null);
-      message.error("Cupón inválido");
+      message.error(err.response?.data?.error || "Cupón inválido");
     }
   };
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
     setCoupon("");
+    localStorage.removeItem("appliedCoupon");
   };
 
   return (
-    <Card bordered style={{ borderRadius: 12, position: "sticky", top: 24 }} title="Resumen">
+    <Card
+      variant="outlined"
+      style={{ borderRadius: 12, position: "sticky", top: 24 }}
+      title="Resumen"
+    >
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <Input
-          placeholder="Cupón (SAVE10, ENVIO0)"
+          placeholder="Código de cupón"
           value={coupon}
           onChange={(e) => setCoupon(e.target.value)}
           disabled={!!appliedCoupon}
@@ -76,7 +98,7 @@ export function CartSummary({
         {appliedCoupon ? (
           <Button onClick={removeCoupon}>Quitar</Button>
         ) : (
-          <Button type="primary" onClick={applyCoupon}>
+          <Button type="primary" onClick={handleApplyCoupon}>
             Aplicar
           </Button>
         )}
@@ -84,7 +106,7 @@ export function CartSummary({
 
       {appliedCoupon && (
         <Tag color="green" style={{ marginBottom: 12 }}>
-          Cupón aplicado: {appliedCoupon}
+          Cupón aplicado: {appliedCoupon.percentage.toFixed(2)}% OFF
         </Tag>
       )}
 
@@ -121,11 +143,7 @@ export function CartSummary({
       >
         Ir a pagar
       </Button>
-      <Button
-        block
-        style={{ marginTop: 8 }}
-        onClick={() => navigate("/")}
-      >
+      <Button block style={{ marginTop: 8 }} onClick={() => navigate("/")}>
         Seguir comprando
       </Button>
     </Card>

@@ -34,8 +34,24 @@ export const cartService = {
     return data
   },
 
-  deleteFromCart: async (id: number) => {
+  removeItem: async (id: number) => {
     const { data } = await api.delete(`${API_URL_ALL.CART}${id}/`)
     return data
+  },
+
+  clearCart: async () => {
+    const { data } = await api.delete(API_URL_ALL.CART_CLEAR);
+    return data;
+  },
+
+  applyCoupon: async (code: string) => {
+    const formData = new FormData();
+    formData.append("code", code);
+
+    const { data } = await api.post(API_URL_ALL.COUPON, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return data;
   },
 }
