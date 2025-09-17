@@ -18,4 +18,5 @@ export const API_URL_ALL = {
     FILTER_NAMES: "/api/products/nombre-filtros/",
     FILTER_OPTIONS: "/api/products/opciones-filtros/",
     FAVORITES: "/api/products/favorites/",
+    CART: "/api/products/shopping-cart/",
 }

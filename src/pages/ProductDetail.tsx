@@ -1,14 +1,25 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Row, Col, Card, Button, Image, Tag, Carousel, Typography } from "antd"
-const { Title } = Typography
-import { ShoppingCartOutlined, HeartOutlined } from "@ant-design/icons"
-import { productService } from "../service/productService"
+import { Row, Col, Card, Image, message } from "antd"
+import { HeartOutlined } from "@ant-design/icons"
 import { motion } from "framer-motion"
 import type { Variants } from "framer-motion"
 import Silk from "../components/animations/Silk"
+import { productService } from "../service/productService"
+import { cartService } from "../service/cartService"
+
+// Componentes importados
+import { BackButton } from "../components/ProductDetail/BackButton"
+import { ProductImageGallery } from "../components/ProductDetail/ProductImageGallery"
+import { ProductInfo } from "../components/ProductDetail/ProductInfo"
+import { ColorSelector } from "../components/ProductDetail/ColorSelector"
+import { SizeSelector } from "../components/ProductDetail/SizeSelector"
+import { QuantitySelector } from "../components/ProductDetail/QuantitySelector"
+import { AddToCartButton } from "../components/ProductDetail/AddToCartButton"
+import { ViewCartButton } from "../components/ProductDetail/ViewCartButton"
+import { ProductDescriptionCard } from "../components/ProductDetail/ProductDescriptionCard"
 
 interface StockDetail {
   id: number
@@ -37,8 +48,54 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState<string>("")
   const [selectedColor, setSelectedColor] = useState<string>("")
   const [selectedSize, setSelectedSize] = useState<string>("")
+  const [quantity, setQuantity] = useState<number>(1)
+  const [messageApi, contextHolder] = message.useMessage()
 
-  // Manejo de selección de color
+  const variant = useMemo(() => {
+    if (!product) return null
+    return product.stock_detail.find(
+      (s) => s.color === selectedColor && s.size === selectedSize
+    ) || null
+  }, [product, selectedColor, selectedSize])
+
+  const handleAddToCart = async () => {
+    if (!product || !variant) {
+      messageApi.open({
+        type: "warning",
+        content: "Debes seleccionar una talla y color disponibles",
+      })
+      return
+    }
+
+    if (quantity > variant.quantity) {
+      messageApi.open({
+        type: "error",
+        content: "Stock insuficiente",
+      })
+      return
+    }
+
+    try {
+      await cartService.addToCart({
+        is_active: true,
+        product_id: product.id,
+        amount: quantity,
+        variant_id: variant.id,
+      })
+
+      messageApi.open({
+        type: "success",
+        content: "Producto agregado al carrito",
+      })
+    } catch (error: any) {
+      messageApi.open({
+        type: "error",
+        content:
+          error.response?.data?.error || "Error al agregar al carrito",
+      })
+    }
+  }
+
   const handleSelectColor = (color: string) => {
     setSelectedColor(color)
 
@@ -61,7 +118,6 @@ const ProductDetail = () => {
     }
   }
 
-  // Manejo de selección de talla
   const handleSelectSize = (size: string) => {
     setSelectedSize(size)
 
@@ -103,20 +159,15 @@ const ProductDetail = () => {
 
   if (!product) return <p>Cargando...</p>
 
-  const discountPercent =
-    product.active_discount && product.discount !== product.price
-      ? Math.round(
-        ((Number(product.discount) - Number(product.price)) / Number(product.discount)) * 100
-      )
-      : 0
+  const filteredImages = product.stock_detail
+    .filter(
+      (s) =>
+        (!selectedColor || s.color === selectedColor) &&
+        (!selectedSize || s.size === selectedSize)
+    )
+    .flatMap((s) => s.media.map((m) => m.file))
 
-  const allImages = [
-    ...new Set([
-      // product.image_cover,
-      ...product.stock_detail.flatMap((s) => s.media.map((m) => m.file)),
-    ]),
-  ]
-
+  const allImages = filteredImages.length > 0 ? filteredImages : [product.image_cover]
   const allSizes = [...new Set(product.stock_detail.map((s) => s.size))]
   const allColors = [...new Set(product.stock_detail.map((s) => s.color))]
 
@@ -134,13 +185,10 @@ const ProductDetail = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   }
 
-  const imageVariants: Variants = {
-    hidden: { scale: 0.95, opacity: 0 },
-    visible: { scale: 1, opacity: 1, transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] } },
-  }
-
   return (
     <>
+      {contextHolder}
+
       {/* Fondo animado */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -177,65 +225,34 @@ const ProductDetail = () => {
           zIndex: 10,
         }}
       >
+        <div style={{ textAlign: "right", marginBottom: "20px" }}>
+          <BackButton />
+        </div>
+
         <Row gutter={[32, 32]}>
-          {/* Miniaturas */}
+          {/* Miniaturas (solo desktop) */}
           <Col xs={0} sm={3}>
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              style={{ display: "flex", flexDirection: "column", gap: 12 }}
-            >
-              {allImages.map((img, index) => (
-                <motion.div key={index} variants={itemVariants}>
-                  <Image
-                    src={img}
-                    alt={`Vista ${index}`}
-                    preview={false}
-                    onClick={() => setSelectedImage(img)}
-                    style={{
-                      border: selectedImage === img ? "2px solid #111" : "1px solid #e5e7eb",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      objectFit: "cover",
-                      width: "100%",
-                      pointerEvents: "none",
-                    }}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
+            <ProductImageGallery
+              images={allImages}
+              selectedImage={selectedImage}
+              onImageSelect={setSelectedImage}
+              isMobile={false}
+            />
           </Col>
 
           {/* Carrusel móvil */}
           <Col xs={24} sm={0}>
-            <Carousel autoplay dots>
-              {allImages.map((img, index) => (
-                <motion.div key={index} variants={imageVariants} initial="hidden" animate="visible">
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <Image
-                      src={img}
-                      alt={`Vista ${index}`}
-                      preview={false}
-                      style={{
-                        borderRadius: 12,
-                        maxHeight: 400,
-                        objectFit: "contain",
-                        margin: "0 auto",
-                        width: "100%",
-                        pointerEvents: "none",
-                      }}
-                      onClick={() => setSelectedImage(img)}
-                    />
-                  </div>
-                </motion.div>
-              ))}
-            </Carousel>
+            <ProductImageGallery
+              images={allImages}
+              selectedImage={selectedImage}
+              onImageSelect={setSelectedImage}
+              isMobile={true}
+            />
           </Col>
 
           {/* Imagen principal */}
           <Col xs={0} sm={10}>
-            <motion.div variants={imageVariants} initial="hidden" animate="visible">
+            <motion.div variants={itemVariants}>
               <Card style={{ textAlign: "center", position: "relative" }}>
                 <Image
                   src={selectedImage}
@@ -248,12 +265,20 @@ const ProductDetail = () => {
                   }}
                   preview={false}
                 />
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={<HeartOutlined />}
-                  style={{ position: "absolute", top: 16, right: 16 }}
-                />
+                <button
+                  type="button"
+                  style={{
+                    position: "absolute",
+                    top: 16,
+                    right: 16,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "20px",
+                  }}
+                >
+                  <HeartOutlined />
+                </button>
               </Card>
             </motion.div>
           </Col>
@@ -261,195 +286,49 @@ const ProductDetail = () => {
           {/* Detalles */}
           <Col xs={24} sm={11}>
             <motion.div variants={itemVariants}>
-              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>{product.name}</h2>
+              <ProductInfo
+                name={product.name}
+                price={product.price}
+                discount={product.discount}
+                activeDiscount={product.active_discount}
+              />
 
-              {/* Precio */}
-              <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
-                {discountPercent > 0 && (
-                  <div style={{ marginBottom: 6 }}>
-                    <span
-                      style={{
-                        textDecoration: "line-through",
-                        color: "#9ca3af",
-                        marginRight: 12,
-                      }}
-                    >
-                      ${product.discount}
-                    </span>
-                    <Tag color="red">-{discountPercent}%</Tag>
-                  </div>
-                )}
-                <div style={{ fontSize: 28, fontWeight: 700, color: "#111827" }}>
-                  ${product.price}
-                </div>
-              </motion.div>
+              <ColorSelector
+                colors={allColors}
+                selectedColor={selectedColor}
+                onSelect={handleSelectColor}
+              />
 
-              {/* Colores */}
-              <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
-                <p style={{ margin: 0, fontWeight: 500 }}>Color</p>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {allColors.map((color, idx) => (
-                    <Button
-                      key={idx}
-                      onClick={() => handleSelectColor(color)}
-                      style={{
-                        borderRadius: "9999px",
-                        padding: "4px 16px",
-                        fontWeight: 500,
-                        backgroundColor: selectedColor === color ? "#111" : "#f3f4f6",
-                        color: selectedColor === color ? "#fff" : "#111",
-                        border: "1px solid #e5e7eb",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      {color}
-                    </Button>
-                  ))}
-                </div>
-              </motion.div>
+              <SizeSelector
+                sizes={allSizes}
+                selectedSize={selectedSize}
+                onSelect={handleSelectSize}
+              />
 
-              {/* Tallas */}
-              <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
-                <p style={{ margin: 0, fontWeight: 500 }}>Talla</p>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {allSizes.map((size, idx) => (
-                    <Button
-                      key={idx}
-                      onClick={() => handleSelectSize(size)}
-                      style={{
-                        borderRadius: "9999px",
-                        padding: "4px 16px",
-                        fontWeight: 500,
-                        backgroundColor: selectedSize === size ? "#111" : "#f3f4f6",
-                        color: selectedSize === size ? "#fff" : "#111",
-                        border: "1px solid #e5e7eb",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      {size}
-                    </Button>
-                  ))}
-                </div>
-              </motion.div>
+              <QuantitySelector
+                quantity={quantity}
+                variant={variant}
+                onIncrease={() =>
+                  setQuantity((prev) =>
+                    variant ? Math.min(prev + 1, variant.quantity) : prev
+                  )
+                }
+                onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
+              />
 
-              {/* Botón */}
-              <motion.div variants={itemVariants} style={{ marginBottom: 20 }}>
-                <Button
-                  type="default"
-                  size="large"
-                  icon={<ShoppingCartOutlined />}
-                  style={{ fontWeight: 600, height: 48 }}
-                  block
-                >
-                  AGREGAR AL CARRITO
-                </Button>
-              </motion.div>
+              <div style={{ display: "flex", gap: 16, marginTop: 24 }}>
+                <AddToCartButton onClick={handleAddToCart} disabled={!variant} />
+                <ViewCartButton />
+              </div>
             </motion.div>
           </Col>
 
           {product.description && (
-            <motion.div
-              variants={itemVariants}
-              style={{
-                marginTop: 32,
-                width: "100%",
-                height: 500,
-                borderRadius: 16,
-                overflow: "hidden",
-                background: "#fff",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-              }}
-            >
-              <Row gutter={0}>
-                {/* Información con scroll */}
-                <Col
-                  xs={24}
-                  md={14}
-                  style={{
-                    height: 500,
-                    background: "#e6e1d7",
-                    borderRadius: "16px 0 0 16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "24px",
-                      height: "320px",
-                      overflowY: "auto",
-                    }}
-                  >
-                    <Title
-                      level={2}
-                      style={{
-                        margin: "0 0 12px 0",
-                        fontWeight: 700,
-                        color: "#111827",
-                      }}
-                    >
-                      Detalles del producto
-                    </Title>
-                    <p
-                      style={{
-                        margin: 0,
-                        lineHeight: 1.7,
-                        color: "#374151",
-                        fontSize: "15px",
-                        whiteSpace: "pre-line",
-                      }}
-                    >
-                      {product.description}
-                    </p>
-                  </div>
-                </Col>
-
-                {/* Imagen reducida */}
-                <Col
-                  xs={0}
-                  md={10}
-                  style={{
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "#fff",
-                    borderRadius: "0 16px 16px 0",
-                  }}
-                >
-                  {/* Imagen Cover con motion */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8 }}
-                    style={{
-                      position: "relative",
-                      width: "100%",
-                      height: "100%",
-                      backgroundImage: `url(${product.image_cover})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center right",
-                    }}
-                  />
-
-                  {/* Overlay difuminado */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: -100,
-                      width: 200,
-                      height: "100%",
-                      background:
-                        "linear-gradient(to right, #e6e1d7 50%, rgba(230,225,215,0) 100%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                </Col>
-              </Row>
-            </motion.div>
+            <ProductDescriptionCard
+              description={product.description}
+              imageCover={product.image_cover}
+            />
           )}
-
-
-
         </Row>
       </motion.div>
     </>
