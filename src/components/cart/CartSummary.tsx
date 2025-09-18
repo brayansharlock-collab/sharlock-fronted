@@ -129,7 +129,7 @@ export function CartSummary({
         <Divider style={{ margin: "12px 0" }} />
         <Row justify="space-between">
           <Title level={4}>Total</Title>
-          <Title level={4}>{COP.format(total)}</Title>
+          <Title level={4} style={{margin: 0}}>{COP.format(total)}</Title>
         </Row>
       </motion.div>
 

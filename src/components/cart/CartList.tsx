@@ -49,7 +49,7 @@ export function CartList({ items, updateQty, removeItem, clearCart }: Props) {
                     itemLayout="horizontal"
                     dataSource={items}
                     style={{
-                        maxHeight: "50vh", // 50% de la altura de la pantalla
+                        maxHeight: "50vh",
                         overflowY: "auto",
                     }}
                     renderItem={(item) => (

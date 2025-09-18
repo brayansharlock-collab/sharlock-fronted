@@ -11,15 +11,10 @@ import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import Silk from "../components/animations/Silk";
 
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../service/authService";
 
 const { Title, Paragraph, Text } = Typography;
-
-interface LoginFormProps {
-  onSwitchToRegister: () => void;
-  onSwitchToForgot: () => void;
-}
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -30,7 +25,7 @@ const itemVariants: Variants = {
   },
 };
 
-export default function Login({ onSwitchToRegister, onSwitchToForgot }: LoginFormProps) {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -164,7 +159,7 @@ export default function Login({ onSwitchToRegister, onSwitchToForgot }: LoginFor
                 <input type="checkbox" style={{ width: "2em" }} />
                 <Text style={{ width: "10em" }}>Recordarme</Text>
               </label>
-              <Button type="link" onClick={onSwitchToForgot} style={{ padding: 0 }}>
+              <Button type="link" style={{ padding: 0 }}>
                 ¿Olvidaste tu contraseña?
               </Button>
             </motion.div>
@@ -207,9 +202,9 @@ export default function Login({ onSwitchToRegister, onSwitchToForgot }: LoginFor
           <motion.div variants={itemVariants} initial="hidden" animate="show">
             <Paragraph style={{ textAlign: "center", marginTop: "1.5rem", color: "#6b7280" }}>
               ¿No tienes una cuenta?{" "}
-              <Button type="link" onClick={onSwitchToRegister} style={{ padding: 0 }}>
+              <Link to="/register" style={{ padding: 0 }}>
                 Regístrate aquí
-              </Button>
+              </Link>
             </Paragraph>
           </motion.div>
         </Card>

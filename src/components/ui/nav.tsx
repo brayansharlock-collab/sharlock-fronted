@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { SearchDrawer } from './SearchDrawer';
+import { cartService } from '../../service/cartService';
 
 const AnimatedNav: React.FC = () => {
     const location = useLocation();
@@ -15,6 +16,21 @@ const AnimatedNav: React.FC = () => {
     const { scrollY } = useScroll();
     const [cartCount, setCartCount] = useState(2);
     const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const fetchCartCount = async () => {
+            try {
+                const data = await cartService.getCart();
+                // 👇 El count viene directo de la API
+                setCartCount(data?.data?.count || 0);
+            } catch (err) {
+                console.error("Error al obtener el carrito", err);
+                setCartCount(0);
+            }
+        };
+
+        fetchCartCount();
+    }, []);
 
     useEffect(() => {
         if (!isHome) {
@@ -42,25 +58,6 @@ const AnimatedNav: React.FC = () => {
         },
     };
 
-    const mockProducts = [
-        { id: 1, name: "Laptop Gamer Pro", category: "Electrónicos" },
-        { id: 2, name: "Teclado Mecánico RGB", category: "Accesorios" },
-        { id: 3, name: "Mouse Inalámbrico Ergonómico", category: "Accesorios" },
-        { id: 4, name: "Smartphone Ultra 5G", category: "Electrónicos" },
-        { id: 5, name: "Auriculares Bluetooth Inalámbricos", category: "Audio" },
-        { id: 6, name: "Monitor 4K 27 pulgadas", category: "Electrónicos" },
-        { id: 7, name: "Parlante Portátil Resistente al Agua", category: "Audio" },
-        { id: 8, name: "Cargador Rápido USB-C", category: "Accesorios" },
-        { id: 9, name: "Tablet para Dibujo Digital", category: "Electrónicos" },
-        { id: 10, name: "Silla Gamer Reclinable", category: "Muebles" },
-    ];
-
-    const handleSearch = (term: string, results: any[]) => {
-        console.log("Término buscado:", term);
-        console.log("Resultados encontrados:", results);
-        // Aquí puedes actualizar el estado, mostrar resultados, etc.
-    };
-
     return (
         isHome ? (
             <motion.nav
@@ -80,7 +77,7 @@ const AnimatedNav: React.FC = () => {
                     padding: '0 20px',
                 }}
             >
-                <SearchDrawer onSearch={handleSearch} isScrolled={isScrolled} />
+                <SearchDrawer isScrolled={isScrolled} />
 
                 <motion.span
                     style={{
@@ -160,7 +157,7 @@ const AnimatedNav: React.FC = () => {
                 }}
             >
                 {/* SearchDrawer */}
-                <SearchDrawer onSearch={handleSearch} isScrolled={isScrolled} />
+                <SearchDrawer isScrolled={isScrolled} />
 
                 {/* Logo */}
                 <span

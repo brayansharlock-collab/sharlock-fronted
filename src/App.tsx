@@ -9,9 +9,10 @@ import Home from "./pages/home";
 import Login from "./pages/login";
 import CartPage from './pages/CartPage';
 import ProcessPay from './pages/process.pay';
-import AnimatedNav from './components/ui/nav';
+// import AnimatedNav from './components/ui/nav';
 import ProfilePage from './pages/ProfilePage';
 import ProductDetail from './pages/ProductDetail';
+import Register from './pages/register';
 
 function App() {
   return (
@@ -19,17 +20,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-        <Route path="/login" element={<Login
-          onSwitchToRegister={() => {
-            console.log("Ir a registro");
-          }}
-          onSwitchToForgot={() => {
-            console.log("Ir a recuperar contraseña");
-          }}
-        />} />
-
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/producto/:slug/:id" element={<ProductDetail />} />
-
 
         <Route
           path="/checkout"

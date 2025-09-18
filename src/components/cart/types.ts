@@ -6,4 +6,5 @@ export type CartItem = {
   quantity: number;
   variantName: string;
   stock: number;
+  image_cover: string;
 };

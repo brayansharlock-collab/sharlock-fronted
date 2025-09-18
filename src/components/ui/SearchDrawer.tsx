@@ -37,10 +37,9 @@ interface Product {
 
 interface SearchDrawerProps {
     isScrolled: boolean;
-    onSearch?: (term: string, results: Product[]) => void;
 }
 
-export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled, onSearch }) => {
+export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -122,7 +121,6 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled, onSearch
     const handleSearch = (term: string, results: Product[]) => {
         setSearchTerm(term);
         setFilteredResults(results);
-        onSearch?.(term, results);
     };
 
     const showInitialState = !loading && !searchTerm && selectedCategories.length === 0 && selectedSubcategories.length === 0;

@@ -32,37 +32,48 @@ export interface User {
 }
 
 export const userService = {
-  // Traer TODOS los usuarios
+
+  register: async (payload: {
+    username: string;
+    email: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    document_type_id: number;
+    document: string;
+    birth_date: string;
+    gender_id: number;
+  }) => {
+    const { data } = await api.post(API_URL_ALL.USERS, payload);
+    return data as User;
+  },
+
   getUsers: async (params?: Record<string, any>) => {
     const { data } = await api.get(API_URL_ALL.USERS, { params });
     return data;
   },
 
-  // Traer UN usuario por ID
   getUser: async (id: number) => {
     const { data } = await api.get(`${API_URL_ALL.USERS}${id}/`);
     return data as User;
   },
 
-  // Actualizar usuario (PUT completo)
   updateUser: async (id: number, payload: Partial<User>) => {
     const { data } = await api.put(`${API_URL_ALL.USERS}${id}/`, payload);
     return data as User;
   },
 
-  // (Opcional) Actualización parcial si tu API soporta PATCH
   patchUser: async (id: number, payload: Partial<User>) => {
     const { data } = await api.patch(`${API_URL_ALL.USERS}${id}/`, payload);
     return data as User;
   },
 
-  // Eliminar usuario por ID
   deleteUser: async (id: number) => {
     await api.delete(`${API_URL_ALL.USERS}${id}/`);
     return true;
   },
 
-  // (Helper) Obtener “mi usuario” desde el localStorage y traerlo del API
   getMeFromLocalStorage: async () => {
     const raw = localStorage.getItem("user");
     const parsed = raw ? JSON.parse(raw) : null;
