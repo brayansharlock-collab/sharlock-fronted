@@ -13,6 +13,7 @@ import ProcessPay from './pages/process.pay';
 import ProfilePage from './pages/ProfilePage';
 import ProductDetail from './pages/ProductDetail';
 import Register from './pages/register';
+import { ProductsPage } from './pages/ProductsPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/products" element={<ProductsPage />} />
         <Route path="/producto/:slug/:id" element={<ProductDetail />} />
 
         <Route

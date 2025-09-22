@@ -7,7 +7,7 @@ import { SearchBarAntd } from "./Search";
 import { ProductCard } from "./ProductCard";
 import { productService } from "../../service/productService";
 import searchAnimation from "../../assets/ilustrations/search.gif";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface Subcategory {
     id: number;
@@ -40,6 +40,7 @@ interface SearchDrawerProps {
 }
 
 export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -59,6 +60,27 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
         setSelectedCategories([]);
         setSelectedSubcategories([]);
     };
+
+    const handleViewMore = () => {
+        const filters = {
+            categories: selectedCategories,
+            subcategories: selectedSubcategories,
+            search: searchTerm,
+        };
+
+        localStorage.setItem("productFilters", JSON.stringify(filters));
+        navigate("/products");
+    };
+
+    useEffect(() => {
+        const filters = {
+            categories: selectedCategories,
+            subcategories: selectedSubcategories,
+            search: searchTerm,
+        };
+
+        localStorage.setItem("productFilters", JSON.stringify(filters));
+    }, [selectedCategories, selectedSubcategories, searchTerm]);
 
     useEffect(() => {
         if (open) {
@@ -98,12 +120,12 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
     };
 
     const filteredSubcategories = useMemo(() => {
-        if (selectedCategories.length === 0) return subcategories;
+        if (selectedCategories.length === 0) return []; // 👉 no muestres nada
         return subcategories.filter((sub) => selectedCategories.includes(sub.category_detail.id));
     }, [subcategories, selectedCategories]);
 
     const filteredProducts = useMemo(() => {
-        const base = filteredResults.length > 0 ? filteredResults : products;
+        const base = searchTerm.trim() ? filteredResults : products;
 
         return base.filter((product) => {
             const matchesCategory = selectedCategories.length
@@ -116,7 +138,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
 
             return matchesCategory && matchesSubcategory;
         });
-    }, [filteredResults, products, selectedCategories, selectedSubcategories]);
+    }, [searchTerm, filteredResults, products, selectedCategories, selectedSubcategories]);
 
     const handleSearch = (term: string, results: Product[]) => {
         setSearchTerm(term);
@@ -210,42 +232,46 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
                             </div>
                         </div>
 
-                        <div style={{ minWidth: 240, flex: "1 1 240px" }}>
-                            <div style={{ fontWeight: 600, marginBottom: 8 }}>Subcategorías</div>
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                {filteredSubcategories.map((sub) => {
-                                    const checked = selectedSubcategories.includes(sub.id);
-                                    return (
-                                        <motion.label
-                                            key={sub.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 8,
-                                                padding: "6px 10px",
-                                                borderRadius: 8,
-                                                background: checked ? "#fff7ed" : "#fff",
-                                                boxShadow: checked ? "0 6px 18px rgba(100,50,10,0.06)" : "0 4px 12px rgba(15,15,15,0.02)",
-                                                cursor: "pointer",
-                                                userSelect: "none",
-                                                border: "1px solid rgba(0,0,0,0.03)",
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={checked}
-                                                onChange={() => handleSubcategoryToggle(sub.id)}
-                                                style={{ width: 14, height: 14 }}
-                                            />
-                                            <span>{sub.name}</span>
-                                        </motion.label>
-                                    );
-                                })}
+                        {selectedCategories.length > 0 && (
+                            <div style={{ minWidth: 240, flex: "1 1 240px" }}>
+                                <div style={{ fontWeight: 600, marginBottom: 8 }}>Subcategorías</div>
+                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                    {filteredSubcategories.map((sub) => {
+                                        const checked = selectedSubcategories.includes(sub.id);
+                                        return (
+                                            <motion.label
+                                                key={sub.id}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                    padding: "6px 10px",
+                                                    borderRadius: 8,
+                                                    background: checked ? "#fff7ed" : "#fff",
+                                                    boxShadow: checked
+                                                        ? "0 6px 18px rgba(100,50,10,0.06)"
+                                                        : "0 4px 12px rgba(15,15,15,0.02)",
+                                                    cursor: "pointer",
+                                                    userSelect: "none",
+                                                    border: "1px solid rgba(0,0,0,0.03)",
+                                                    fontSize: 13,
+                                                }}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    onChange={() => handleSubcategoryToggle(sub.id)}
+                                                    style={{ width: 14, height: 14 }}
+                                                />
+                                                <span>{sub.name}</span>
+                                            </motion.label>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                             <Button onClick={() => { setSearchTerm(""); setSelectedCategories([]); setSelectedSubcategories([]); }}>
@@ -271,9 +297,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ isScrolled }) => {
                     ) : filteredProducts.length > 0 ? (
                         <div>
                             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 24 }}>
-                                <Link to="/productos">
-                                    <Button variant="outlined">Ver más productos</Button>
-                                </Link>
+                                <Button variant="outlined" onClick={handleViewMore}>Ver más productos</Button>
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 16 }}>
                                 {filteredProducts.slice(0, 6).map((product) => {
