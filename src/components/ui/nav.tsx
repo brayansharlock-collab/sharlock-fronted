@@ -90,7 +90,7 @@ const AnimatedNav: React.FC = () => {
                     <Link to="/products" >
                         <SearchOutlined
                             style={{
-                                fontSize: "18px",
+                                fontSize: "22px",
                                 color: isScrolled ? "#000" : "#fff",
                             }}
                         />
@@ -115,8 +115,8 @@ const AnimatedNav: React.FC = () => {
                     }}
                     className="left-[6%] md:left-[0%] lg:left-0%]"
                     variants={textVariants}
-                    initial="entry"                               // 👉 primero corre la entrada
-                    animate={isScrolled ? "collapsed" : "initial"} // 👉 después usa tu animación original
+                    initial="entry"
+                    animate={isScrolled ? "collapsed" : "initial"}
                     transition={{
                         duration: 1,
                         ease: [0.6, -0.05, 0.01, 0.99],
@@ -133,10 +133,9 @@ const AnimatedNav: React.FC = () => {
                 >
                     <Link to="/Profile" >
                         {isHome && (
-
                             <UserOutlined
                                 style={{
-                                    fontSize: '18px',
+                                    fontSize: '22px',
                                     color: isScrolled ? '#000' : '#fff',
                                     cursor: 'pointer',
                                 }}
@@ -147,7 +146,7 @@ const AnimatedNav: React.FC = () => {
                         <Badge count={cartCount} size="small">
                             <ShoppingCartOutlined
                                 style={{
-                                    fontSize: '18px',
+                                    fontSize: '22px',
                                     color: isScrolled ? '#000' : '#fff',
                                     cursor: 'pointer',
                                 }}

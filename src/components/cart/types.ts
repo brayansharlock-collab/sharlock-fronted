@@ -7,4 +7,6 @@ export type CartItem = {
   variantName: string;
   stock: number;
   image_cover: string;
+  product_id: number;
+  variant_id: number;
 };

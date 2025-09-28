@@ -6,6 +6,10 @@ import { ProductCard } from "../components/ui/ProductCard";
 import { productService } from "../service/productService";
 import { CloseOutlined, SearchOutlined, ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { cartService } from "../service/cartService";
+// import searchAnimation from "../../src/assets/ilustrations/search.gif";
+
 
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -27,6 +31,7 @@ export const ProductsPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [restored, setRestored] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
+    const [cartCount, setCartCount] = useState(2);
     const screens = useBreakpoint();
     const lastFetchId = useRef(0);
 
@@ -50,6 +55,21 @@ export const ProductsPage: React.FC = () => {
 
         setRestored(true);
     }, [restored]);
+
+    useEffect(() => {
+        const fetchCartCount = async () => {
+            try {
+                const data = await cartService.getCart();
+                // 👇 El count viene directo de la API
+                setCartCount(data?.data?.count || 0);
+            } catch (err) {
+                console.error("Error al obtener el carrito", err);
+                setCartCount(0);
+            }
+        };
+
+        fetchCartCount();
+    }, []);
 
     // guardar filtros solo después de haber restaurado
     useEffect(() => {
@@ -185,8 +205,6 @@ export const ProductsPage: React.FC = () => {
         }
     };
 
-
-
     useEffect(() => {
         if (!restored) return;
         fetchProducts();
@@ -221,7 +239,6 @@ export const ProductsPage: React.FC = () => {
         }
     };
 
-
     // filtros (lo extraemos para usarlo en Sider y Drawer)
     const FiltersContent = (
         <div>
@@ -240,7 +257,7 @@ export const ProductsPage: React.FC = () => {
                                 setSubcategoryFilters([]);
 
                                 setUserChangedFilters(true);
-                                setDerivedCategory(null); 
+                                setDerivedCategory(null);
                                 setSearchTerm("");
                             }}
                         >
@@ -404,7 +421,6 @@ export const ProductsPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* 🔹 Botones */}
                     <div style={{ display: "flex", alignItems: "center", gap: 16, color: "black" }}>
                         {!screens.lg && (
                             <Button type="primary" onClick={() => setDrawerVisible(true)}>
@@ -422,43 +438,48 @@ export const ProductsPage: React.FC = () => {
                             <UserOutlined style={{ color: "black", fontSize: 22, cursor: "pointer" }} />
                         </Link>
                         <Link to="/CarPage" style={{ textDecoration: "none" }}>
-                            <Badge count={2} size="small" offset={[-4, 4]}>
+                            <Badge count={cartCount} size="small" offset={[-4, 4]}>
                                 <ShoppingCartOutlined style={{ fontSize: 22, cursor: "pointer" }} />
                             </Badge>
                         </Link>
                     </div>
                 </div>
 
-                {!screens.md && showSearch && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: "100%", // justo debajo del nav
-                            left: 0,
-                            right: 0,
-                            background: "white",
-                            padding: "12px 16px",
-                            zIndex: 99,
-                            color: "black",
-                        }}
-                    >
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <SearchBarAntd
-                                onSearch={(t) => {
-                                    handleSearch(t);
-                                    setShowSearch(false);
-                                }}
-                                products={products}
-                            />
-                            <CloseOutlined
-                                style={{ fontSize: 20, cursor: "pointer" }}
-                                onClick={() => setShowSearch(false)}
-                            />
-                        </div>
-                    </div>
-                )}
+                <AnimatePresence>
+                    {!screens.md && showSearch && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.35, ease: "easeOut" }}
+                            style={{
+                                position: "absolute",
+                                top: "100%", // justo debajo del nav
+                                left: 0,
+                                right: 0,
+                                background: "white",
+                                padding: "12px 16px",
+                                zIndex: 99,
+                                color: "black",
+                            }}
+                        >
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <SearchBarAntd
+                                    onSearch={(t) => {
+                                        handleSearch(t);
+                                        setShowSearch(false);
+                                    }}
+                                    products={products}
+                                />
+                                <CloseOutlined
+                                    style={{ fontSize: 20, cursor: "pointer" }}
+                                    onClick={() => setShowSearch(false)}
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
-
 
             <Layout>
                 {screens.lg ? (
@@ -477,6 +498,7 @@ export const ProductsPage: React.FC = () => {
                         title="Filtros"
                         placement="left"
                         onClose={() => setDrawerVisible(false)}
+                        style={{ background: '#e5e1d7' }}
                         open={drawerVisible}
                         width={280}
                     >
@@ -485,7 +507,7 @@ export const ProductsPage: React.FC = () => {
                 )}
 
                 {/* right products */}
-                <Content style={{ padding: 24 }}>
+                <Content style={{ padding: 24, background: '#e5e1d7' }}>
                     {loading ? (
                         <div style={{ textAlign: "center", paddingTop: 60 }}>
                             <Spin size="large" />
@@ -494,7 +516,16 @@ export const ProductsPage: React.FC = () => {
                         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
                             {filteredProducts.length === 0 ? (
                                 <div style={{ textAlign: "center", paddingTop: 40 }}>
-                                    <Empty description="No se encontraron productos" />
+                                    <Empty
+                                        description="No se encontraron productos"
+                                    // image={
+                                    //     <img
+                                    //         src={searchAnimation}
+                                    //         alt="Sin resultados"
+                                    //          style={{ width: "20%", height: 150,  maxWidth: 320, opacity: 0.95 }} 
+                                    //     />
+                                    // }
+                                    />
                                 </div>
                             ) : (
                                 <Row gutter={[20, 20]}>

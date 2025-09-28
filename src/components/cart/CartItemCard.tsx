@@ -1,3 +1,4 @@
+// components/cart/CartItemCard.tsx
 import { Button, InputNumber, Popconfirm, Row, Col, Typography } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
@@ -30,8 +31,6 @@ export function CartItemCard({ item, updateQty, removeItem }: Props) {
       <Row justify="space-between" align="middle" gutter={16}>
         <Col flex="auto">
           <Text strong>{item.name}</Text>
-          <Text strong>{item.image_cover}</Text>
-          
           <div style={{ fontSize: 12, color: "#6b7280" }}>
             {item.variantName} • Stock: {item.stock}
           </div>

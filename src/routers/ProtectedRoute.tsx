@@ -8,8 +8,6 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const token = tokenStorage.getAccessToken();
-  console.log(token);
-  
   if (!token) {
     return <Navigate to="/login" replace />;
   }
