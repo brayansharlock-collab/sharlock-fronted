@@ -6,7 +6,7 @@ export const API_URL_ALL = {
     ADRESS: `api/accounts/addresses/`,
 
     ORDERS: `api/orders/`,
-
+ 
     // Direcciones
     DEPARMENT: "/api/accounts/department/",
     APARMENT_TYPE: "/api/accounts/apartament-type/",
@@ -23,4 +23,6 @@ export const API_URL_ALL = {
     CART: "/api/products/shopping-cart/",
     CART_CLEAR: "api/products/delete-shopping-cart/",
     COUPON: "api/products/coupon/",
+
+    BANNER: "api/accounts/banner/",
 }

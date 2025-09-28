@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, message, Tooltip } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeartFilled, HeartOutlined, StarOutlined } from "@ant-design/icons";
@@ -27,7 +27,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   image,
   images = [],
   price,
-  rating = 0,
+  rating = 0, 
   originalPrice,
   isNew,
   initialIsFavorite = false,
@@ -79,7 +79,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         key={id}
         style={{
           transition: "box-shadow 0.2s ease",
-          width: "15em",
           borderRadius: "1.2rem",
           backgroundColor: "white",
           cursor: "pointer",
@@ -95,7 +94,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               <div style={{ position: "relative", overflow: "hidden", height: "20rem" }}>
                 <AnimatePresence mode="wait">
                   <motion.img
-                    key={hover ? allImages[1] : allImages[0]} // cambia key para animar entre imágenes
+                    key={hover ? allImages[1] : allImages[0]}
                     src={hover ? allImages[1] : allImages[0]}
                     alt={name}
                     loading="lazy"
@@ -140,7 +139,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               <BadgeNuevo isNew={!isNew} />
             </AnimatePresence>
 
-            <Tooltip title="Agregar a favoritos">
+            <Tooltip title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
               <Button
                 style={{
                   position: "absolute",

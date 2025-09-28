@@ -1,11 +1,11 @@
 // src/pages/ProductsPage.tsx
-import React, { useEffect, useState } from "react";
-import { Layout, Slider, Button, Spin, Checkbox, Divider, Row, Col, Empty, Grid, Drawer, Badge, Avatar } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { Layout, Slider, Button, Spin, Checkbox, Divider, Row, Col, Empty, Grid, Drawer, Badge } from "antd";
 import { SearchBarAntd } from "../components/ui/Search";
 import { ProductCard } from "../components/ui/ProductCard";
 import { productService } from "../service/productService";
-import Silk from "../components/animations/Silk";
-import { ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
+import { CloseOutlined, SearchOutlined, ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -16,6 +16,7 @@ export const ProductsPage: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
     const [subcategoryFilters, setSubcategoryFilters] = useState<any[]>([]);
+    const [showSearch, setShowSearch] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
@@ -24,12 +25,21 @@ export const ProductsPage: React.FC = () => {
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState<string>("");
-
+    const [restored, setRestored] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const screens = useBreakpoint();
+    const lastFetchId = useRef(0);
+
+    const [userChangedFilters, setUserChangedFilters] = useState(false);
+
+    const [derivedCategory, setDerivedCategory] = useState<number | null>(null);
+
+    const displayedCategory = searchTerm ? (userChangedFilters ? selectedCategory : derivedCategory) : selectedCategory;
 
     // Recuperar filtros guardados al montar
     useEffect(() => {
+        if (restored) return;
+
         const saved = localStorage.getItem("productFilters");
         if (saved) {
             const parsed = JSON.parse(saved);
@@ -37,17 +47,21 @@ export const ProductsPage: React.FC = () => {
             if (parsed?.subcategories?.length) setSelectedSubcategories(parsed.subcategories);
             if (parsed?.search) setSearchTerm(parsed.search);
         }
-    }, []);
 
-    // Guardar filtros en localStorage
+        setRestored(true);
+    }, [restored]);
+
+    // guardar filtros solo después de haber restaurado
     useEffect(() => {
+        if (!restored) return;
+
         const payload = {
             categories: selectedCategory ? [selectedCategory] : [],
             subcategories: selectedSubcategories,
             search: searchTerm || "",
         };
         localStorage.setItem("productFilters", JSON.stringify(payload));
-    }, [selectedCategory, selectedSubcategories, searchTerm]);
+    }, [selectedCategory, selectedSubcategories, searchTerm, restored]);
 
     // cargar categorías
     useEffect(() => {
@@ -87,52 +101,95 @@ export const ProductsPage: React.FC = () => {
             setSubcategoryFilters(data.filter_name_detail || []);
             setSelectedSubcategories([subId]);
             setSelectedFilters([]);
+
+            setUserChangedFilters(true);
         } catch (err) {
             console.error("Error cargando filtros de subcategoría:", err);
             setSubcategoryFilters([]);
         }
     };
 
+
     // Construye params para la API de productos
     const buildParams = () => {
-        const params: any = {};
-        if (selectedCategory !== null) params.category_filter_id = selectedCategory;
-        if (selectedSubcategories.length > 0) {
-            params.sub_category_filter_id =
-                selectedSubcategories.length === 1
-                    ? selectedSubcategories[0]
-                    : selectedSubcategories.join(",");
+        const body: any = {};
+        if (searchTerm) {
+            body.search = searchTerm;
+        } else {
+            if (selectedCategory !== null) body.category_filter_id = selectedCategory;
+            if (selectedSubcategories.length > 0) {
+                body.sub_category_filter_id =
+                    selectedSubcategories.length === 1
+                        ? selectedSubcategories[0]
+                        : selectedSubcategories.join(",");
+            }
+            if (selectedFilters.length > 0) {
+                body.filters = selectedFilters.join(",");
+            }
         }
-        if (selectedFilters.length > 0) {
-            params.filters = selectedFilters.join(",");
-        }
-        if (searchTerm) params.search = searchTerm;
-        if (priceRange?.[0] !== undefined) params.min_price = priceRange[0];
-        if (priceRange?.[1] !== undefined) params.max_price = priceRange[1];
-        return params;
+        if (priceRange?.[0] !== undefined) body.min_price = priceRange[0];
+        if (priceRange?.[1] !== undefined) body.max_price = priceRange[1];
+        return body;
     };
 
     // fetchProducts usando productService.list(params)
     const fetchProducts = async () => {
+        const fetchId = ++lastFetchId.current;
         try {
             setLoading(true);
-            const params = buildParams();
-            const data = await productService.list(params);
-            setProducts(Array.isArray(data) ? data : []);
-            setFilteredProducts(Array.isArray(data) ? data : []);
+            const body = buildParams();
+            const data = await productService.list(body);
+
+            if (fetchId !== lastFetchId.current) return;
+
+            const results = Array.isArray(data) ? data : [];
+            setProducts(results);
+            setFilteredProducts(results);
+
+            if (searchTerm && results.length > 0) {
+                const uniqueCategoryIds = Array.from(
+                    new Set(results.map((p: any) => p.subcategory?.category_detail?.id).filter(Boolean))
+                );
+
+                const uniqueSubcatObjs = results
+                    .map((p: any) => p.subcategory)
+                    .filter(Boolean)
+                    .reduce((acc: any[], cur: any) => {
+                        if (!acc.some((s) => s.id === cur.id)) acc.push(cur);
+                        return acc;
+                    }, []);
+
+                setDerivedCategory(uniqueCategoryIds.length === 1 ? uniqueCategoryIds[0] : null);
+
+                if (uniqueCategoryIds.length === 1) {
+                    const foundCat = categories.find((c) => c.id === uniqueCategoryIds[0]);
+                    if (foundCat) {
+                        setSubcategories(foundCat.sub_category || []);
+                    } else {
+                        setSubcategories(uniqueSubcatObjs);
+                    }
+                } else {
+                    setSubcategories(uniqueSubcatObjs);
+                }
+            } else {
+                setDerivedCategory(null);
+                if (!selectedCategory) setSubcategories([]);
+            }
         } catch (err) {
+            if (fetchId !== lastFetchId.current) return;
             console.error("Error productos:", err);
             setProducts([]);
             setFilteredProducts([]);
         } finally {
-            setLoading(false);
+            if (fetchId === lastFetchId.current) setLoading(false);
         }
     };
 
-    // refrescar cuando cambian filtros o búsqueda
+
+
     useEffect(() => {
+        if (!restored) return;
         fetchProducts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategory, selectedSubcategories, selectedFilters, priceRange, searchTerm]);
 
     // resetear filtros
@@ -143,19 +200,27 @@ export const ProductsPage: React.FC = () => {
         setPriceRange([0, 1000000]);
         setSearchTerm("");
         setSubcategoryFilters([]);
+        setUserChangedFilters(false);
         localStorage.removeItem("productFilters");
     };
 
     // handler del searchbar
-    const handleSearch = (term: string) => {
-        setSearchTerm(term || "");
-        if (term && term.trim()) {
+    const handleSearch = (value: string) => {
+        const trimmed = value?.trim() ?? "";
+        setSearchTerm(value);
+
+        if (trimmed === "") {
+            setDerivedCategory(null);
             setSelectedCategory(null);
             setSelectedSubcategories([]);
             setSelectedFilters([]);
             setSubcategoryFilters([]);
+        } else {
+            setUserChangedFilters(false);
+            setDerivedCategory(null);
         }
     };
+
 
     // filtros (lo extraemos para usarlo en Sider y Drawer)
     const FiltersContent = (
@@ -166,12 +231,17 @@ export const ProductsPage: React.FC = () => {
                     categories.map((cat: any) => (
                         <Checkbox
                             key={cat.id}
-                            checked={selectedCategory === cat.id}
+                            checked={displayedCategory === cat.id}
                             onChange={() => {
-                                setSelectedCategory(selectedCategory === cat.id ? null : cat.id);
+                                const newCat = selectedCategory === cat.id ? null : cat.id;
+                                setSelectedCategory(newCat);
                                 setSelectedSubcategories([]);
                                 setSelectedFilters([]);
                                 setSubcategoryFilters([]);
+
+                                setUserChangedFilters(true);
+                                setDerivedCategory(null); 
+                                setSearchTerm("");
                             }}
                         >
                             {cat.name}
@@ -185,14 +255,24 @@ export const ProductsPage: React.FC = () => {
             <Divider />
 
             <h3 style={{ marginBottom: 12 }}>Subcategorías</h3>
-            {selectedCategory ? (
+            {displayedCategory ? (
                 Array.isArray(subcategories) && subcategories.length > 0 ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {subcategories.map((sub: any) => (
                             <Checkbox
                                 key={sub.id}
                                 checked={selectedSubcategories.includes(sub.id)}
-                                onChange={() => handleSelectSubcategory(sub.id)}
+                                onChange={() => {
+                                    handleSelectSubcategory(sub.id);
+
+                                    // si venías de búsqueda, haz transición al modo manual
+                                    if (searchTerm) {
+                                        setSearchTerm("");
+                                        setDerivedCategory(null);
+                                    }
+
+                                    setUserChangedFilters(true);
+                                }}
                             >
                                 {sub.name}
                             </Checkbox>
@@ -267,7 +347,7 @@ export const ProductsPage: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: "100vh" }}>
-            <div
+            {/* <div
                 style={{
                     position: "fixed",
                     width: "100%",
@@ -276,15 +356,17 @@ export const ProductsPage: React.FC = () => {
                 }}
             >
                 <Silk speed={10} scale={1} color="#e6e1d7" noiseIntensity={1.5} rotation={0} />
-            </div>
+            </div> */}
 
-            {/* top search */}
-            <div style={{
-                zIndex: 2,
-                padding: 16,
-                background: "linear-gradient(to bottom, #e8e2d9 50%, rgba(255,255,255,0) 100%)",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-            }}>
+            <div
+                style={{
+                    zIndex: 2,
+                    padding: 16,
+                    background: "white",
+                    position: "relative",
+                    backgroundColor: "#ffffffdd",
+                }}
+            >
                 <div
                     style={{
                         display: "flex",
@@ -292,50 +374,100 @@ export const ProductsPage: React.FC = () => {
                         justifyContent: "space-between",
                     }}
                 >
-                    {/* 🔹 Logo Sharlock */}
-                    <div style={{
-                        fontWeight: 700, fontSize: 20, color: "#000000ff",
-                        whiteSpace: 'nowrap',
-                        fontFamily: 'Lora, serif',
-                    }}>SHARLOCK</div>
+                    <Link to="/" style={{ textDecoration: "none" }}>
+                        <div
+                            style={{
+                                fontWeight: 700,
+                                fontSize: 20,
+                                marginLeft: 30,
+                                color: "#000000ff",
+                                whiteSpace: "nowrap",
+                                fontFamily: "Lora, serif",
+                            }}
+                        >
+                            SHARLOCK
+                        </div>
+                    </Link>
 
-                    {/* 🔹 Buscador */}
-                    <div style={{ flex: 1, margin: "0 206px" }}>
-                        <SearchBarAntd onSearch={(t) => handleSearch(t)} products={products} />
-                    </div>
+                    {screens.md && (
+                        <div
+                            style={{
+                                flex: 1,
+                                margin: "0 20px",
+                                maxWidth: "600px",
+                            }}
+                        >
+                            <SearchBarAntd
+                                onSearch={(t) => handleSearch(t)}
+                                products={products}
+                            />
+                        </div>
+                    )}
 
-                    {/* 🔹 Botones de acción */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                        {/* Botón Filtros solo en móvil */}
-                        {!screens.md && (
+                    {/* 🔹 Botones */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, color: "black" }}>
+                        {!screens.lg && (
                             <Button type="primary" onClick={() => setDrawerVisible(true)}>
                                 Filtros
                             </Button>
                         )}
+                        {!screens.md && (
+                            <SearchOutlined
+                                style={{ fontSize: 22, cursor: "pointer" }}
+                                onClick={() => setShowSearch(true)}
+                            />
+                        )}
 
-                        {/* Carrito */}
-                        <Badge count={2} size="small" offset={[-4, 4]}>
-                            <ShoppingCartOutlined style={{ fontSize: 22, cursor: "pointer" }} />
-                        </Badge>
-
-                        {/* Perfil */}
-                        <UserOutlined />
+                        <Link to="/profile" style={{ textDecoration: "none" }}>
+                            <UserOutlined style={{ color: "black", fontSize: 22, cursor: "pointer" }} />
+                        </Link>
+                        <Link to="/CarPage" style={{ textDecoration: "none" }}>
+                            <Badge count={2} size="small" offset={[-4, 4]}>
+                                <ShoppingCartOutlined style={{ fontSize: 22, cursor: "pointer" }} />
+                            </Badge>
+                        </Link>
                     </div>
                 </div>
+
+                {!screens.md && showSearch && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "100%", // justo debajo del nav
+                            left: 0,
+                            right: 0,
+                            background: "white",
+                            padding: "12px 16px",
+                            zIndex: 99,
+                            color: "black",
+                        }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <SearchBarAntd
+                                onSearch={(t) => {
+                                    handleSearch(t);
+                                    setShowSearch(false);
+                                }}
+                                products={products}
+                            />
+                            <CloseOutlined
+                                style={{ fontSize: 20, cursor: "pointer" }}
+                                onClick={() => setShowSearch(false)}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
+
             <Layout>
-                {/* left filters */}
-                {screens.md ? (
+                {screens.lg ? (
                     <Sider
-                        width={320}
+                        width={250}
                         style={{
-                            margin: 30,
-                            borderRadius: 16,
                             background: "#fff",
                             padding: 20,
                             color: "black",
-                            boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
                         }}
                     >
                         {FiltersContent}
@@ -380,6 +512,7 @@ export const ProductsPage: React.FC = () => {
                                                     originalPrice={originalPrice}
                                                     rating={product.rating || 4.5}
                                                     isNew={false}
+                                                    initialIsFavorite={product.is_favorite || false}
                                                 />
                                             </Col>
                                         );

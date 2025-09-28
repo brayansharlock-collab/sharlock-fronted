@@ -42,10 +42,13 @@ const normalizeResults = (resData: any) => {
 };
 
 export const productService = {
-  // list acepta params (filtros)
-  list: async (params: any = {}) => {
-    const res = await api.get(`${API_URL_ALL.PRODUCTS}`, { params });
-    // intenta normalizar varias formas que pueda devolver backend
+  list: async (body: any = {}) => {
+    if (body.favorite_product !== undefined) {
+      body.favorite_product = String(body.favorite_product);
+    }
+    console.log("productService.list body:", body);
+    
+    const res = await api.post(`${API_URL_ALL.PRODUCTS}`, body );
     return normalizeResults(res.data) || [];
   },
 

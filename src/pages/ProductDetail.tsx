@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Row, Col, Card, Image, message } from "antd"
-import { HeartOutlined } from "@ant-design/icons"
+import { Row, Col, Card, Image, message, Button, Tooltip } from "antd"
+import { HeartFilled, HeartOutlined } from "@ant-design/icons"
 import { motion } from "framer-motion"
 import type { Variants } from "framer-motion"
 import Silk from "../components/animations/Silk"
@@ -48,8 +48,16 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState<string>("")
   const [selectedColor, setSelectedColor] = useState<string>("")
   const [selectedSize, setSelectedSize] = useState<string>("")
-  const [quantity, setQuantity] = useState<number>(1)
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage()
+  const [quantity, setQuantity] = useState<number>(1)
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setIsFavorite(product.is_favorite);
+    }
+  }, [product]);
 
   const variant = useMemo(() => {
     if (!product) return null
@@ -57,6 +65,29 @@ const ProductDetail = () => {
       (s) => s.color === selectedColor && s.size === selectedSize
     ) || null
   }, [product, selectedColor, selectedSize])
+
+  const toggleFavorite = async () => {
+    if (loading) return;
+    if (!product?.id) {
+      console.warn("El producto no tiene id, no se puede eliminar de favoritos");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      if (product?.is_favorite) {
+        await productService.removeFromFavorites(product?.id);
+        setIsFavorite(false);
+      } else {
+        await productService.addToFavorites(product?.id);
+        setIsFavorite(true);
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Error al actualizar favoritos");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddToCart = async () => {
     if (!product || !variant) {
@@ -265,20 +296,28 @@ const ProductDetail = () => {
                   }}
                   preview={false}
                 />
-                <button
-                  type="button"
-                  style={{
-                    position: "absolute",
-                    top: 16,
-                    right: 16,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "20px",
-                  }}
-                >
-                  <HeartOutlined />
-                </button>
+                <Tooltip title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
+                  <Button
+                    style={{
+                      position: "absolute",
+                      top: "0.5rem",
+                      right: "0.5rem",
+                      borderRadius: "0.8rem",
+                      backdropFilter: "blur(10px)",
+                      background: "rgba(255, 255, 255, 0.7)",
+                      border: "1px solid rgba(255, 255, 255, 0.5)",
+                      transition: "all 0.2s ease",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFavorite();
+                    }}
+                    icon={isFavorite ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
+                    loading={loading}
+                    type={isFavorite ? "primary" : "default"}
+                  />
+                </Tooltip>
               </Card>
             </motion.div>
           </Col>
