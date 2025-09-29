@@ -13,6 +13,8 @@ import Silk from "../components/animations/Silk";
 
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../service/authService";
+import Footer from "../components/ui/Footer";
+import SharlockLogo from "../components/ui/SharlockLogo";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -31,6 +33,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
 
@@ -40,7 +43,7 @@ export default function Login() {
     setError("");
 
     try {
-      const user = await authService.login(email, password);
+      const user = await authService.login(email, password, rememberMe);
 
       localStorage.setItem("user", JSON.stringify(user));
       navigate("/", { replace: true });
@@ -60,19 +63,26 @@ export default function Login() {
         height: "100vh",
       }}
     >
+
+      {/* Logo arriba izquierda */}
+      <SharlockLogo />
+
+      {/* Footer abajo derecha */}
+      <Footer />
+      
       {/* Fondo animado */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        style={{ width: "100%", height: "100%", zIndex: -1 }}
+        style={{ width: "100%", height: "100vh", zIndex: -1 }}
       >
         <Silk speed={10} scale={1} color="#e6e1d7" noiseIntensity={1.5} rotation={0} />
       </motion.div>
 
       {/* Formulario */}
       <motion.div
-        initial={{ width: 64, height: 434, borderRadius: "50%" }}
+        initial={{ width: 63, height: 434, borderRadius: "50%" }}
         animate={{ width: "100%", maxWidth: 400, height: "auto", borderRadius: "1rem" }}
         transition={{ type: "spring", stiffness: 120, damping: 15, duration: 0.8 }}
         style={{ position: "absolute" }}
@@ -156,7 +166,12 @@ export default function Login() {
               style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
             >
               <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" style={{ width: "2em" }} />
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ width: "2em" }}
+                />
                 <Text style={{ width: "10em" }}>Recordarme</Text>
               </label>
               <Button type="link" style={{ padding: 0 }}>

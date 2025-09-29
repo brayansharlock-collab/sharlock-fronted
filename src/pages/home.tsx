@@ -3,8 +3,19 @@ import { Carousel, Row, Col, Card } from "antd";
 import AnimatedNav from "../components/ui/nav";
 import { bannersService } from "../service/banners";
 import { ProductCategoryShowcase } from "../components/home/ProductCategoryShowcase";
+import { motion, AnimatePresence } from "framer-motion";
+import lock from "../assets/ilustrations/Lock Animation.gif";
 
-const categories = ["Tecnología", "Moda", "Hogar", "Deportes", "Libros", "Juguetes", "Accesorios", "Deportes"];
+const categories = [
+    "Tecnología",
+    "Moda",
+    "Hogar",
+    "Deportes",
+    "Libros",
+    "Juguetes",
+    "Accesorios",
+    "Deportes",
+];
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -22,117 +33,213 @@ function getResponsiveChunkSize(): number {
 }
 
 let groupedCategories = chunkArray(categories, getResponsiveChunkSize());
-window.addEventListener('resize', () => { groupedCategories = chunkArray(categories, getResponsiveChunkSize()); });
+window.addEventListener("resize", () => {
+    groupedCategories = chunkArray(categories, getResponsiveChunkSize());
+});
 
 const Home: React.FC = () => {
     const [slides, setSlides] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchBanners = async () => {
+        const fetchData = async () => {
             try {
-                const data = await bannersService.list();
-                setSlides(data);
+                const banners = await bannersService.list();
+                setSlides(banners);
+
+                // Simulamos esperar a que todo se renderice (ej: showcases)
+                setTimeout(() => setIsLoading(false), 2000);
             } catch (error) {
                 console.error("Error cargando banners:", error);
+                setIsLoading(false);
             }
         };
-        fetchBanners();
+        fetchData();
     }, []);
 
     return (
         <>
-            <div style={{ position: "relative" }}>
-                <AnimatedNav />
+            {/* 🔹 Pantalla de carga con animaciones */}
+           <AnimatePresence>
+  {isLoading && (
+    <motion.div
+      key="loading"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8 }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100vh",
+        background: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
+      }}
+    >
+      <motion.div
+        initial={{ y: 0 }}
+        animate={{
+          y: isLoading ? 0 : -300, // 👈 sube cuando termina
+        }}
+        transition={{ duration: 1.2, ease: "easeInOut" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 20,
+        }}
+      >
+        {/* GIF candado */}
+        {/* <motion.img
+          src={lock}
+          alt="Candado animado"
+          style={{ width: 120, height: 120 }}
+          initial={{ opacity: 1 }}
+          animate={{
+            opacity: isLoading ? 1 : 0.9,
+            scale: isLoading ? 1 : 0.95,
+          }}
+          transition={{ duration: 1 }}
+        /> */}
 
-                {/* Slider Principal */}
-                <Carousel dots={false} arrows autoplay>
-                    {slides.map((slide, i) => (
-                        <div key={i} style={{ position: "relative" }}>
-                            <div
-                                style={{
-                                    height: 730,
-                                    backgroundImage: `url(${slide.img})`,
-                                    backgroundSize: "cover",
-                                    backgroundPosition: "center",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexDirection: "column",
-                                    textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
-                                    color: "white"
-                                }}
-                            >
-                                {/* videos proocionales */}
+        {/* Texto SHARLOCK */}
+        <motion.h1
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            color: isLoading ? "#000" : "#fff", // 👈 pasa de negro a blanco
+          }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          style={{
+            letterSpacing: "4px",
+            fontSize: "clamp(28px, 6vw, 60px)",
+            fontWeight: "bold",
+            textShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
+            fontFamily: "Lora, serif",
+          }}
+        >
+          SHARLOCK
+        </motion.h1>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+
+            {/* 🔹 Contenido principal */}
+            {!isLoading && (
+                <div style={{ position: "relative" }}>
+                    <AnimatedNav />
+
+                    {/* Slider Principal */}
+                    <Carousel dots={false} arrows autoplay>
+                        {slides.map((slide, i) => (
+                            <div key={i} style={{ position: "relative" }}>
                                 <div
                                     style={{
-                                        position: "absolute",
-                                        bottom: 0,
-                                        left: 0,
-                                        width: "100%",
-                                        height: "25%",
-                                        background: "linear-gradient(to bottom, transparent, #e6e1d7)",
+                                        height: 730,
+                                        backgroundImage: `url(${slide.img})`,
+                                        backgroundSize: "cover",
+                                        backgroundPosition: "center",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        flexDirection: "column",
+                                        textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+                                        color: "white",
                                     }}
-                                />
-                            </div>
-                        </div>
-                    ))}
-                </Carousel>
-
-                {/* Slider Categorías - SUPERPUESTO */}
-                <div
-                    style={{
-                        position: "absolute",
-                        bottom: 80,
-                        left: 0,
-                        width: "100%",
-                        zIndex: 10,
-                        padding: "0 40px",
-                        background: "transparent",
-                    }}
-                >
-                    <Carousel dots={false} slidesToShow={1} arrows autoplay>
-                        {groupedCategories.map((group, index) => (
-                            <div key={index}>
-                                <Row gutter={[16, 24]} justify="center" style={{ padding: "0 20px" }}>
-                                    {group.map((cat, i) => (
-                                        <Col xs={12} sm={8} md={6} lg={4} xl={4} key={i}>
-                                            <Card
-                                                hoverable
-                                                style={{
-                                                    width: "100%",
-                                                    maxWidth: 120,
-                                                    height: 120,
-                                                    borderRadius: "50%",
-                                                    textAlign: "center",
-                                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                                                    backgroundColor: "#fafafa",
-                                                    cursor: "pointer",
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                }}
-                                            >
-                                                <Card.Meta
-                                                    title={cat}
-                                                    style={{ fontWeight: "bold", fontSize: 16, padding: "0 10px" }}
-                                                />
-                                            </Card>
-                                        </Col>
-                                    ))}
-                                </Row>
+                                >
+                                    {/* videos proocionales */}
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            bottom: 0,
+                                            left: 0,
+                                            width: "100%",
+                                            height: "25%",
+                                            background:
+                                                "linear-gradient(to bottom, transparent, #e6e1d7)",
+                                        }}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </Carousel>
 
+                    {/* Slider Categorías */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            bottom: 80,
+                            left: 0,
+                            width: "100%",
+                            zIndex: 10,
+                            padding: "0 40px",
+                            background: "transparent",
+                        }}
+                    >
+                        <Carousel dots={false} slidesToShow={1} arrows autoplay>
+                            {groupedCategories.map((group, index) => (
+                                <div key={index}>
+                                    <Row
+                                        gutter={[16, 24]}
+                                        justify="center"
+                                        style={{ padding: "0 20px" }}
+                                    >
+                                        {group.map((cat, i) => (
+                                            <Col xs={12} sm={8} md={6} lg={4} xl={4} key={i}>
+                                                <Card
+                                                    hoverable
+                                                    style={{
+                                                        width: "100%",
+                                                        maxWidth: 120,
+                                                        height: 120,
+                                                        borderRadius: "50%",
+                                                        textAlign: "center",
+                                                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                                        backgroundColor: "#fafafa",
+                                                        cursor: "pointer",
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+                                                    }}
+                                                >
+                                                    <Card.Meta
+                                                        title={cat}
+                                                        style={{
+                                                            fontWeight: "bold",
+                                                            fontSize: 16,
+                                                            padding: "0 10px",
+                                                        }}
+                                                    />
+                                                </Card>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                </div>
+                            ))}
+                        </Carousel>
+                    </div>
                 </div>
-            </div>
-            {categories.map((cat, idx) => (
-                <ProductCategoryShowcase
-                    key={idx}
-                    categoryId={idx + 1} // 👈 cambia según el id real que devuelva tu API
-                    categoryName={cat}
-                />
-            ))}
+            )}
+
+            {/* Productos por categoría */}
+            {!isLoading &&
+                categories.map((cat, idx) => (
+                    <ProductCategoryShowcase
+                        key={idx}
+                        categoryId={idx + 1}
+                        categoryName={cat}
+                    />
+                ))}
         </>
     );
 };

@@ -17,6 +17,8 @@ import Silk from "../components/animations/Silk";
 import { userService } from "../service/userService";
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import Footer from "../components/ui/Footer";
+import SharlockLogo from "../components/ui/SharlockLogo";
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -27,7 +29,7 @@ const itemVariants: Variants = {
 };
 
 export default function Register() {
-  const passwordRegex =/^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])(?=(?:.*\d){3,})(?=.{8,})/;
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])(?=(?:.*\d){3,})(?=.{8,})/;
 
   const [form, setForm] = useState({
     username: "",
@@ -101,6 +103,9 @@ export default function Register() {
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+      <SharlockLogo />
+
+      <Footer />
       {/* Fondo animado */}
       <motion.div
         initial={{ opacity: 0 }}

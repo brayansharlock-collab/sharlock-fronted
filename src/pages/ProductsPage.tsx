@@ -10,7 +10,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { cartService } from "../service/cartService";
 // import searchAnimation from "../../src/assets/ilustrations/search.gif";
 
-
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
 
@@ -423,7 +422,7 @@ export const ProductsPage: React.FC = () => {
 
                     <div style={{ display: "flex", alignItems: "center", gap: 16, color: "black" }}>
                         {!screens.lg && (
-                            <Button type="primary" onClick={() => setDrawerVisible(true)}>
+                            <Button type="dashed" onClick={() => setDrawerVisible(true)}>
                                 Filtros
                             </Button>
                         )}

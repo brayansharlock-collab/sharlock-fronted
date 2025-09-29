@@ -10,6 +10,7 @@ import {
   ShoppingCartOutlined,
   SearchOutlined,
   ArrowLeftOutlined,
+  HeartOutlined,
 } from "@ant-design/icons";
 import { Card, Button, Space, Grid } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,12 +22,14 @@ import UserInfo from "../components/profile/UserInfo";
 import AddressList from "../components/profile/AddressList";
 import OrderHistory from "../components/profile/OrderHistory";
 import ProductTracking from "../components/profile/ProductTracking";
+import FavoriteProducts from "../components/profile/FavoriteProducts";
 
 const { useBreakpoint } = Grid;
 
 const menuItems = [
   { key: "user", label: "Tus datos", icon: <UserOutlined /> },
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
+  { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
   { key: "cards", label: "Mis tarjetas", icon: <CreditCardOutlined /> },
   { key: "orders", label: "Historial de pedidos", icon: <ShoppingCartOutlined /> },
   { key: "tracking", label: "Seguimiento de productos", icon: <SearchOutlined /> },
@@ -50,6 +53,8 @@ export default function ProfilePage() {
         return <OrderHistory />;
       case "tracking":
         return <ProductTracking />;
+      case "favorites":
+        return <FavoriteProducts />;
       default:
         return null;
     }
@@ -136,13 +141,13 @@ export default function ProfilePage() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: -20 }}
           transition={{ duration: 0.35 }}
-          style={{ width: "100%", maxWidth: 1200, padding: "2rem" }}
+          style={{ width: "100%", maxWidth: 1200, padding: "1rem" }}
         >
           <Card
             style={{
               borderRadius: "1.25rem",
               boxShadow: "0 8px 24px rgba(226, 222, 199, 0.93)",
-              height: "auto",
+              height: "80vh",
               overflowY: "auto",
             }}
           >
