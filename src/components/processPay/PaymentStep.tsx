@@ -42,7 +42,11 @@ export default function PaymentStep({ setCheckoutData, onNext }: any) {
         paymentResult = { status: "approved" };
       } else if (method === "credit") {
         const token = await mercadoPagoService.createCardToken({
+          cardNumber: values.card.replace(/\s/g, ""),
           cardholderName: values.name,
+          cardExpirationMonth: values.expiry.split("/")[0],
+          cardExpirationYear: "20" + values.expiry.split("/")[1],
+          securityCode: values.cvv,
           identificationType: values.idType,
           identificationNumber: values.idNumber,
         });
@@ -73,7 +77,14 @@ export default function PaymentStep({ setCheckoutData, onNext }: any) {
         }));
         onNext();
       } else {
-        message.error("❌ Pago rechazado");
+        setCheckoutData((prev: any) => ({
+          ...prev,
+          paymentMethod: method,
+          cardType,
+          paymentApproved: false,
+          paymentResult,
+        }));
+        onNext();
       }
     } catch (error) {
       console.error("Error:", error);
@@ -159,9 +170,9 @@ export default function PaymentStep({ setCheckoutData, onNext }: any) {
                         maxLength={19}
                         suffix={
                           cardType === "visa" ? <FaCcVisa size={24} color="#1a1f71" />
-                          : cardType === "master" ? <FaCcMastercard size={24} color="#eb001b" />
-                          : cardType === "amex" ? <FaCcAmex size={24} color="#2e77bb" />
-                          : <CreditCardOutlined />
+                            : cardType === "master" ? <FaCcMastercard size={24} color="#eb001b" />
+                              : cardType === "amex" ? <FaCcAmex size={24} color="#2e77bb" />
+                                : <CreditCardOutlined />
                         }
                         onChange={(e) => {
                           let value = e.target.value.replace(/\D/g, "");

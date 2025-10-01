@@ -53,7 +53,13 @@ export default function ProcessPay() {
       title: "Pago",
       content: <PaymentStep checkoutData={checkoutData} setCheckoutData={setCheckoutData} onNext={next} />,
     },
-    { title: "Finalizado", content: <SuccessStep /> },
+    {
+      title: "Finalizado", content: <SuccessStep
+        checkoutData={checkoutData}
+        onRetry={() => {
+          setCurrent(2);
+        }} />
+    },
   ];
 
   return (
@@ -90,7 +96,7 @@ export default function ProcessPay() {
 
         <div style={{ marginTop: "2rem" }}>
           <Row gutter={[8, 8]} justify="end">
-            {current > 0 && (
+            {current > 0 && current !== 3 && (
               <Col>
                 <Button block={window.innerWidth < 576} onClick={prev}>
                   Atrás

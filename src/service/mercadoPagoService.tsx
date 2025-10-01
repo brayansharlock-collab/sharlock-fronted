@@ -6,27 +6,60 @@ declare global {
 
 import { loadMercadoPago } from "@mercadopago/sdk-js";
 
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
+const MP_API_URL = import.meta.env.VITE_MP_API_URL;
+
 let mp: any = null;
 
 export const mercadoPagoService = {
   init: async () => {
     if (!mp) {
       await loadMercadoPago();
-      mp = new window.MercadoPago(
-        "TEST-3106c665-e231-48aa-a7c9-4c252344d140", // tu PUBLIC_KEY
-        { locale: "es-CO" }
-      );
+      mp = new window.MercadoPago(MP_PUBLIC_KEY, { locale: "es-CO" });
     }
     return mp;
   },
 
   createCardToken: async (data: {
+    cardNumber: string;
     cardholderName: string;
+    cardExpirationMonth: string;
+    cardExpirationYear: string;
+    securityCode: string;
     identificationType: string;
     identificationNumber: string;
   }) => {
-    if (!mp) await mercadoPagoService.init();
-    return await mp.fields.createCardToken(data);
+    const payload = {
+      card_number: data.cardNumber,
+      expiration_month: Number(data.cardExpirationMonth),
+      expiration_year: Number(data.cardExpirationYear),
+      security_code: data.securityCode,
+      cardholder: {
+        name: data.cardholderName,
+        identification: {
+          type: data.identificationType,
+          number: data.identificationNumber,
+        },
+      },
+    };
+
+    const res = await fetch(
+      `${MP_API_URL}?public_key=${MP_PUBLIC_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Error al crear token");
+    }
+
+    const json = await res.json();
+    console.log("RESPUESTA:", json);
+    return json;
   },
 
   getIdentificationTypes: async () => {
@@ -35,7 +68,7 @@ export const mercadoPagoService = {
   },
 
   processPayment: async (payload: any) => {
-    const res = await fetch("http://localhost:8000/api/process_card_payment/", {
+    const res = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/process_card_payment/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -44,7 +77,7 @@ export const mercadoPagoService = {
   },
 
   startPSE: async () => {
-    const res = await fetch("http://localhost:8000/api/create_preference/", {
+    const res = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/create_preference/`, {
       method: "POST",
     });
     const { id } = await res.json();

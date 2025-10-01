@@ -62,11 +62,12 @@ export default function CartPage() {
     if (!item) return;
 
     try {
-    //   await cartService.updateCart(id, {
-    //     amount: qty,
-    //     product_id: item.product_id,
-    //     variant_id: item.variant_id,
-    //   });
+      await cartService.updateCart(id, {
+        amount: qty,
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        is_active: true,
+      });
 
       await fetchCart();
       message.success("Cantidad actualizada");
