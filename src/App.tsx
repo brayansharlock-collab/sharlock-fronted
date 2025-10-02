@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProductDetail from './pages/ProductDetail';
 import Register from './pages/register';
 import { ProductsPage } from './pages/ProductsPage';
+import FinalStep from './components/processPay/SuccessStep';
 
 function App() {
   return (
@@ -25,9 +26,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/producto/:slug/:id" element={<ProductDetail />} />
+        <Route path="/Checkout/:contentdisplay" element={<FinalStep />}/>
 
         <Route
-          path="/checkout"
+          path="/Checkout"
           element={
             <ProtectedRoute>
               <ProcessPay />

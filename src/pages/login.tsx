@@ -11,10 +11,12 @@ import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import Silk from "../components/animations/Silk";
 
-import { Link, useNavigate } from "react-router-dom";
-import { authService } from "../service/authService";
 import Footer from "../components/ui/Footer";
+import { Link, useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import { authService } from "../service/authService";
 import SharlockLogo from "../components/ui/SharlockLogo";
+import { googleAuthService } from "../service/googleAuthService";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -36,6 +38,28 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setError("");
+      try {
+        const userData = await googleAuthService.loginWithGoogleAccessToken(tokenResponse.access_token);
+        localStorage.setItem("user", JSON.stringify(userData));
+        navigate("/", { replace: true });
+      } catch (err: any) {
+        setError(err.message || "Error al iniciar sesión con Google");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      setError("Error al iniciar sesión con Google");
+      setLoading(false);
+    },
+    scope: 'openid profile email',
+    flow: 'implicit',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +93,7 @@ export default function Login() {
 
       {/* Footer abajo derecha */}
       <Footer />
-      
+
       {/* Fondo animado */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -208,7 +232,13 @@ export default function Login() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            <Button block icon={<GoogleOutlined />}>
+            <Button
+              block
+              icon={<GoogleOutlined />}
+              onClick={() => handleGoogleLogin()}
+              loading={loading}
+              disabled={loading}
+            >
               Google
             </Button>
           </motion.div>

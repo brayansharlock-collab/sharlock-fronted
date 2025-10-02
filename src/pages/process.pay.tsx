@@ -4,10 +4,9 @@ import { Card, Steps, Button, Row, Col } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 
 import AddressStep from "../components/processPay/AddressStep";
-import PaymentStep from "../components/processPay/PaymentStep";
 import SummaryStep from "../components/processPay/SummaryStep";
-import SuccessStep from "../components/processPay/SuccessStep";
 import Silk from "../components/animations/Silk";
+import { mercadoPagoService } from "../service/mercadoPagoService";
 
 const { Step } = Steps;
 
@@ -40,6 +39,14 @@ export default function ProcessPay() {
   const next = () => setCurrent((prev) => prev + 1);
   const prev = () => setCurrent((prev) => prev - 1);
 
+  const pay = async () => {
+    let payload = {
+      amount: 1100,
+      title: "asdasds",
+    };
+    await mercadoPagoService.startPayMercadopago(payload)
+  }
+
   const steps = [
     {
       title: "Dirección",
@@ -48,17 +55,6 @@ export default function ProcessPay() {
     {
       title: "Resumen",
       content: <SummaryStep checkoutData={checkoutData} />,
-    },
-    {
-      title: "Pago",
-      content: <PaymentStep checkoutData={checkoutData} setCheckoutData={setCheckoutData} onNext={next} />,
-    },
-    {
-      title: "Finalizado", content: <SuccessStep
-        checkoutData={checkoutData}
-        onRetry={() => {
-          setCurrent(2);
-        }} />
     },
   ];
 
@@ -105,7 +101,7 @@ export default function ProcessPay() {
             )}
 
             {/* Mostrar "Siguiente" en pasos 0 y 1 */}
-            {current < 2 && (
+            {current < 1 && (
               <Col>
                 <Button
                   type="primary"
@@ -114,6 +110,18 @@ export default function ProcessPay() {
                   disabled={current === 0 && !checkoutData.selectedAddress}
                 >
                   Siguiente
+                </Button>
+              </Col>
+            )}
+
+            {current === 1 && (
+              <Col>
+                <Button
+                  type="primary"
+                  block={window.innerWidth < 576}
+                  onClick={pay}
+                >
+                  Ir a pagar
                 </Button>
               </Col>
             )}

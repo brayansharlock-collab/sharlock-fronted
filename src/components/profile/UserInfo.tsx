@@ -258,26 +258,26 @@ export default function UserInfo() {
               <Form layout="vertical" form={form}>
                 <Row gutter={16}>
                   {[
-                    { label: "Usuario", name: "username", icon: <MailOutlined />, value: user.username },
-                    { label: "Correo", name: "email", icon: <MailOutlined />, value: user.email },
-                    { label: "Teléfono", name: "phone", icon: <PhoneOutlined />, value: user.phone },
+                    { label: "Usuario", name: "username", icon: <MailOutlined />, value: user.username? user.username : "No proporcionado" },
+                    { label: "Correo", name: "email", icon: <MailOutlined />, value: user.email ? user.email : "No proporcionado" },
+                    { label: "Teléfono", name: "phone", icon: <PhoneOutlined />, value: user.phone ? user.phone : "Numero no proporcionado" },
                     {
                       label: "Documento",
                       name: "document",
                       icon: <IdcardOutlined />,
-                      value: `${user.document_type?.type} ${user.document}`,
+                      value: `Documento:  ${user.document ? user.document : "No proporcionado"}`,
                     },
-                    {
-                      label: "Género",
-                      name: "gender",
-                      icon: <TeamOutlined />,
-                      value: `${user.age} años - ${user.gender?.type}`,
-                    },
+                    // {
+                    //   label: "Género",
+                    //   name: "gender",
+                    //   icon: <TeamOutlined />,
+                    //   value: `${user.age ? user.age : 0} años `,
+                    // },
                     {
                       label: "Fecha de Nacimiento",
                       name: "birth_date",
                       icon: <CalendarOutlined />,
-                      value: user.birth_date,
+                      value: user.birth_date ? dayjs(user.birth_date).format("DD/MM/YYYY") : "No proporcionado",
                     },
                   ].map((field, index) => (
                     <Col xs={24} md={12} key={field.name}>

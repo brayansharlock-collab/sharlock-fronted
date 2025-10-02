@@ -18,6 +18,7 @@
   "dependencies": {
     "@ant-design/icons": "6.0.0",
     "@mercadopago/sdk-js": "^0.0.3",
+    "@react-oauth/google": "^0.12.2",
     "@react-three/fiber": "^9.3.0",
     "@tailwindcss/postcss": "4.1.11",
     "@tailwindcss/vite": "4.1.11",

@@ -25,4 +25,6 @@ export const API_URL_ALL = {
     COUPON: "api/products/coupon/",
 
     BANNER: "api/accounts/banner/",
+
+    GOOGLE: "api/accounts/api-token-auth-google/",
 }
