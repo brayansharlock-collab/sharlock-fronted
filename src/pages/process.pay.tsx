@@ -7,12 +7,15 @@ import AddressStep from "../components/processPay/AddressStep";
 import SummaryStep from "../components/processPay/SummaryStep";
 import Silk from "../components/animations/Silk";
 import { mercadoPagoService } from "../service/mercadoPagoService";
+import { getDecryptedCookie } from "../utils/encrypt";
+import SharlockLogo from "../components/ui/SharlockLogo";
 
 const { Step } = Steps;
 
 export default function ProcessPay() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const [checkoutData, setCheckoutData] = useState({
     selectedAddress: null as string | null,
@@ -40,12 +43,20 @@ export default function ProcessPay() {
   const prev = () => setCurrent((prev) => prev - 1);
 
   const pay = async () => {
+    setLoading(true);
+    const total = getDecryptedCookie("checkout_total");
+    if (!total) {
+      console.error("No se encontró el total en cookies");
+      return;
+    }
     let payload = {
-      amount: 1100,
-      title: "asdasds",
+      amount: total,
+      title: "Compra en sharklock",
     };
-    await mercadoPagoService.startPayMercadopago(payload)
-  }
+
+    await mercadoPagoService.startPayMercadopago(payload);
+    setLoading(false);
+  };
 
   const steps = [
     {
@@ -60,6 +71,8 @@ export default function ProcessPay() {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", height: "100vh", alignItems: "center" }}>
+      <SharlockLogo />
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -69,7 +82,7 @@ export default function ProcessPay() {
         <Silk speed={10} scale={1} color="#e6e1d7" noiseIntensity={1.5} rotation={0} />
       </motion.div>
 
-      <Card style={{ boxShadow: "0 4px 122px rgba(230, 227, 212, 1)", maxWidth: 1000, width: "100%", padding: "1rem", borderRadius: "1rem", position: "absolute" }}>
+      <Card style={{ boxShadow: "0 4px 122px rgba(255, 255, 255, 1)", maxWidth: 1000, width: "100%", padding: "1rem", borderRadius: "1rem", position: "absolute" }}>
         <Steps current={current} style={{ marginBottom: "2rem" }}>
           {steps.map((s, i) => (
             <Step key={i} title={s.title} />
@@ -120,13 +133,13 @@ export default function ProcessPay() {
                   type="primary"
                   block={window.innerWidth < 576}
                   onClick={pay}
+                  disabled={loading}
+                  loading={loading}
                 >
                   Ir a pagar
                 </Button>
               </Col>
             )}
-
-            {/* En paso 2, el botón está DENTRO de PaymentStep */}
 
             <Col>
               <Button block={window.innerWidth < 576} onClick={() => navigate("/")}>

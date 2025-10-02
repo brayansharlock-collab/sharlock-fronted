@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Typography, List, Card, message } from "antd";
 import { cartService } from "../../service/cartService";
+import { getDecryptedCookie, setEncryptedCookie } from "../../utils/encrypt";
 
 const { Title, Text } = Typography;
 
@@ -11,8 +12,10 @@ export default function SummaryStep({ checkoutData }: any) {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
 
   useEffect(() => {
-    // 🔹 Leer cupón desde localStorage
-    const storedCoupon = localStorage.getItem("appliedCoupon");
+    const storedCoupon = getDecryptedCookie("appliedCo");
+    if (storedCoupon) {
+      setAppliedCoupon(storedCoupon);
+    }
     if (storedCoupon) {
       try {
         setAppliedCoupon(JSON.parse(storedCoupon));
@@ -70,6 +73,12 @@ export default function SummaryStep({ checkoutData }: any) {
       : 0;
 
   const finalTotal = Math.max(total - discount, 0);
+
+  useEffect(() => {
+    if (finalTotal > 0) {
+      setEncryptedCookie("checkout_total", finalTotal);
+    }
+  }, [finalTotal]);
 
   return (
     <div>

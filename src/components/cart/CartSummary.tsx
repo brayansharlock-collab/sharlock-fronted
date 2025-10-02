@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { COP } from "../common/Currency";
 import type { CartItem } from "./types";
 import { cartService } from "../../service/cartService";
+import { removeCookie, setEncryptedCookie } from "../../utils/encrypt";
 
 const { Title, Text } = Typography;
 
@@ -59,19 +60,17 @@ export function CartSummary({
     try {
       const res = await cartService.applyCoupon(code);
 
-      setAppliedCoupon({
+      const couponData = {
         id: res.coupon_id,
         percentage: res.percentage,
-      });
+        code,
+      };
 
-      localStorage.setItem(
-        "appliedCoupon",
-        JSON.stringify({ id: res.coupon_id, percentage: res.percentage })
-      );
-
-      message.success(res.message);
+      setAppliedCoupon(couponData);
+      setEncryptedCookie("appliedCo", couponData, 7);
     } catch (err: any) {
       setAppliedCoupon(null);
+      removeCookie("appliedCo");
       message.error(err.response?.data?.error || "Cupón inválido");
     }
   };
@@ -79,7 +78,7 @@ export function CartSummary({
   const removeCoupon = () => {
     setAppliedCoupon(null);
     setCoupon("");
-    localStorage.removeItem("appliedCoupon");
+    removeCookie("appliedCo");
   };
 
   return (
@@ -129,7 +128,7 @@ export function CartSummary({
         <Divider style={{ margin: "12px 0" }} />
         <Row justify="space-between">
           <Title level={4}>Total</Title>
-          <Title level={4} style={{margin: 0}}>{COP.format(total)}</Title>
+          <Title level={4} style={{ margin: 0 }}>{COP.format(total)}</Title>
         </Row>
       </motion.div>
 

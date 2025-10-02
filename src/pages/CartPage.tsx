@@ -7,6 +7,7 @@ import { CartSummary } from "../components/cart/CartSummary";
 import { motion } from "framer-motion";
 import Silk from "../components/animations/Silk";
 import { cartService } from "../service/cartService";
+import { getDecryptedCookie, removeCookie } from "../utils/encrypt";
 
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -34,15 +35,14 @@ export default function CartPage() {
       setItems(mapped);
 
       if (mapped.length <= 0) {
-        localStorage.removeItem("appliedCoupon");
+        removeCookie("appliedCo");
         setAppliedCoupon(null);
         setCoupon("");
       } else {
-        const storedCoupon = localStorage.getItem("appliedCoupon");
+        const storedCoupon = getDecryptedCookie("appliedCo");
         if (storedCoupon) {
-          const parsed = JSON.parse(storedCoupon);
-          setAppliedCoupon(parsed);
-          setCoupon(parsed.code || "");
+          setAppliedCoupon(storedCoupon);
+          setCoupon(storedCoupon.code || "");
         }
       }
     } catch (err) {
@@ -53,7 +53,6 @@ export default function CartPage() {
   useEffect(() => {
     fetchCart();
   }, []);
-  
 
   const updateQty = async (id: number, qty: number | null) => {
     if (!qty || qty < 1) return;
@@ -92,7 +91,7 @@ export default function CartPage() {
       setItems([]);
       setAppliedCoupon(null);
       setCoupon("");
-      localStorage.removeItem("appliedCoupon");
+      removeCookie("appliedCo");
       message.success("Carrito vacío");
     } catch {
       message.error("No se pudo vaciar el carrito");
