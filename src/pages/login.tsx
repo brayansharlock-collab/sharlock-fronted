@@ -198,9 +198,11 @@ export default function Login() {
                 />
                 <Text style={{ width: "10em" }}>Recordarme</Text>
               </label>
-              <Button type="link" style={{ padding: 0 }}>
-                ¿Olvidaste tu contraseña?
-              </Button>
+              <Link to="/forgot-password">
+                <Button type="link" style={{ padding: 0 }}>
+                  ¿Olvidaste tu contraseña?
+                </Button>
+              </Link>
             </motion.div>
 
             {/* Botón */}

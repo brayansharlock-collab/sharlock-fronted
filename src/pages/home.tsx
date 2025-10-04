@@ -4,18 +4,7 @@ import AnimatedNav from "../components/ui/nav";
 import { bannersService } from "../service/banners";
 import { ProductCategoryShowcase } from "../components/home/ProductCategoryShowcase";
 import { motion, AnimatePresence } from "framer-motion";
-import lock from "../assets/ilustrations/Lock Animation.gif";
-
-const categories = [
-    "Tecnología",
-    "Moda",
-    "Hogar",
-    "Deportes",
-    "Libros",
-    "Juguetes",
-    "Accesorios",
-    "Deportes",
-];
+import { productService } from "../service/productService";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -25,20 +14,35 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
     return result;
 }
 
-function getResponsiveChunkSize(): number {
-    const width = window.innerWidth;
-    if (width < 768) return 2;
-    if (width < 1024) return 3;
-    return 4;
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    is_active: boolean;
+    img: string | null;
+    sub_category: SubCategory[];
 }
 
-let groupedCategories = chunkArray(categories, getResponsiveChunkSize());
-window.addEventListener("resize", () => {
-    groupedCategories = chunkArray(categories, getResponsiveChunkSize());
-});
+interface SubCategory {
+    id: number;
+    name: string;
+    slug: string;
+    category: number;
+    is_active: boolean;
+    sub_category: null;
+    filter_name: number[];
+}
+
+const getResponsiveChunkSize = () => {
+    if (window.innerWidth < 576) return 1;
+    if (window.innerWidth < 992) return 2;
+    return 4;
+};
 
 const Home: React.FC = () => {
     const [slides, setSlides] = useState<any[]>([]);
+    const [categoriesAll, setCategoriesAll] = useState<any[]>([]);
+    const [groupedCategories, setGroupedCategories] = useState<any[][]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -47,7 +51,6 @@ const Home: React.FC = () => {
                 const banners = await bannersService.list();
                 setSlides(banners);
 
-                // Simulamos esperar a que todo se renderice (ej: showcases)
                 setTimeout(() => setIsLoading(false), 2000);
             } catch (error) {
                 console.error("Error cargando banners:", error);
@@ -57,46 +60,69 @@ const Home: React.FC = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        const updateChunks = () => {
+            const chunkSize = getResponsiveChunkSize();
+            setGroupedCategories(chunkArray(categoriesAll, chunkSize));
+        };
+
+        updateChunks();
+        window.addEventListener("resize", updateChunks);
+
+        return () => window.removeEventListener("resize", updateChunks);
+    }, [categoriesAll]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const cats = await productService.categories();
+                setCategoriesAll(Array.isArray(cats) ? cats : []);
+            } catch (err) {
+                console.error("Error categorias:", err);
+            }
+        })();
+    }, []);
+
     return (
         <>
             {/* 🔹 Pantalla de carga con animaciones */}
-           <AnimatePresence>
-  {isLoading && (
-    <motion.div
-      key="loading"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.8 }}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100vh",
-        background: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999,
-      }}
-    >
-      <motion.div
-        initial={{ y: 0 }}
-        animate={{
-          y: isLoading ? 0 : -300, // 👈 sube cuando termina
-        }}
-        transition={{ duration: 1.2, ease: "easeInOut" }}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 20,
-        }}
-      >
-        {/* GIF candado */}
-        {/* <motion.img
+            <AnimatePresence>
+                {isLoading && (
+                    <motion.div
+                        key="loading"
+                        initial={{ opacity: 1 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.8 }}
+                        style={{
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100vh",
+                            background: "#fff",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            zIndex: 9999,
+                        }}
+                    >
+                        <motion.div
+                            initial={{ y: 0 }}
+                            animate={{
+                                y: isLoading ? 0 : -300, // 👈 sube cuando termina
+                            }}
+                            transition={{ duration: 1.2, ease: "easeInOut" }}
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                gap: 20,
+                            }}
+                        >
+                            {/* GIF candado */}
+                            {/* <motion.img
           src={lock}
           alt="Candado animado"
           style={{ width: 120, height: 120 }}
@@ -108,30 +134,31 @@ const Home: React.FC = () => {
           transition={{ duration: 1 }}
         /> */}
 
-        {/* Texto SHARLOCK */}
-        <motion.h1
-          initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          animate={{
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            color: isLoading ? "#000" : "#fff", // 👈 pasa de negro a blanco
-          }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          style={{
-            letterSpacing: "4px",
-            fontSize: "clamp(28px, 6vw, 60px)",
-            fontWeight: "bold",
-            textShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
-            fontFamily: "Lora, serif",
-          }}
-        >
-          SHARLOCK
-        </motion.h1>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
+
+                            {/* Texto SHARLOCK */}
+                            <motion.h1
+                                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                                animate={{
+                                    opacity: 1,
+                                    y: 0,
+                                    scale: 1,
+                                    color: isLoading ? "#000" : "#fff", // 👈 pasa de negro a blanco
+                                }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                style={{
+                                    letterSpacing: "4px",
+                                    fontSize: "clamp(28px, 6vw, 60px)",
+                                    fontWeight: "bold",
+                                    textShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
+                                    fontFamily: "Lora, serif",
+                                }}
+                            >
+                                SHARLOCK
+                            </motion.h1>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
 
             {/* 🔹 Contenido principal */}
@@ -194,8 +221,8 @@ const Home: React.FC = () => {
                                         justify="center"
                                         style={{ padding: "0 20px" }}
                                     >
-                                        {group.map((cat, i) => (
-                                            <Col xs={12} sm={8} md={6} lg={4} xl={4} key={i}>
+                                        {group.map((cat: Category,) => (
+                                            <Col style={{width: "200px", display: "flex", justifyContent: "center"}} key={cat.id}>
                                                 <Card
                                                     hoverable
                                                     style={{
@@ -213,7 +240,7 @@ const Home: React.FC = () => {
                                                     }}
                                                 >
                                                     <Card.Meta
-                                                        title={cat}
+                                                        title={cat.name}
                                                         style={{
                                                             fontWeight: "bold",
                                                             fontSize: 16,
@@ -233,11 +260,11 @@ const Home: React.FC = () => {
 
             {/* Productos por categoría */}
             {!isLoading &&
-                categories.map((cat, idx) => (
+                categoriesAll.map((cat, idx) => (
                     <ProductCategoryShowcase
                         key={idx}
                         categoryId={idx + 1}
-                        categoryName={cat}
+                        categoryName={cat.name}
                     />
                 ))}
         </>

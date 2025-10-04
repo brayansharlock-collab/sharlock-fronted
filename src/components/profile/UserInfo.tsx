@@ -4,32 +4,30 @@ import {
   Avatar,
   Button,
   Col,
-  Divider,
   Form,
   Input,
   message,
   Row,
   Typography,
-  Select,
   DatePicker,
+  Card,
 } from "antd";
 import {
   UserOutlined,
-  MailOutlined,
   PhoneOutlined,
   CalendarOutlined,
   LogoutOutlined,
   EditOutlined,
   SaveOutlined,
   IdcardOutlined,
-  TeamOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { userService, type User } from "../../service/userService";
 import dayjs from "dayjs";
 import { authService } from "../../service/authService";
+import peopleImg from "../../assets/ilustrations/People.gif"
 
 const { Title, Text } = Typography;
 
@@ -57,9 +55,11 @@ export default function UserInfo() {
       form.setFieldsValue({
         ...data,
         birth_date: data.birth_date ? dayjs(data.birth_date) : null,
+        // Aseguramos que email y username estén sincronizados al cargar
+        email: data.username || data.email,
       });
     } catch {
-      messageApi.error({ key, content: "Error al cargar tu datos" });
+      messageApi.error({ key, content: "Error al cargar tus datos" });
     } finally {
       setLoading(false);
     }
@@ -80,6 +80,7 @@ export default function UserInfo() {
       form.setFieldsValue({
         ...updated,
         birth_date: updated.birth_date ? dayjs(updated.birth_date) : null,
+        email: updated.username || updated.email,
       });
       messageApi.success({
         key,
@@ -97,6 +98,7 @@ export default function UserInfo() {
       form.setFieldsValue({
         ...user,
         birth_date: user.birth_date ? dayjs(user.birth_date) : null,
+        email: user.username || user.email,
       });
     }
     setEditing(false);
@@ -121,15 +123,6 @@ export default function UserInfo() {
     },
   };
 
-  const itemVariants:Variants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.1, duration: 0.4 },
-    }),
-  };
-
   return (
     <>
       {contextHolder}
@@ -137,202 +130,159 @@ export default function UserInfo() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        style={{ padding: "24px" }}
       >
-          <Row gutter={[24, 24]}>
-            {/* Avatar y acciones */}
-            <Col xs={24} md={6} style={{ textAlign: "center" }}>
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5,  stiffness: 300 }}
-              >
-                <Avatar
-                  size={140}
-                  src={user.avatar || undefined}
-                  icon={<UserOutlined />}
-                  style={{
-                    border: "4px solid white",
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-                  }}
-                />
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Title level={4} style={{ marginTop: 16, marginBottom: 4 }}>
+        {/* Header con avatar y acciones */}
+        <Card
+          style={{
+            marginBottom: 24,
+            borderRadius: 16,
+            boxShadow: "none",
+            background: "none",
+          }}
+        >
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Row align="middle" gutter={16}>
+                <Col>
+                  <Avatar
+                    size={80}
+                    src={user.avatar || undefined}
+                    icon={<UserOutlined />}
+                  />
+                </Col>
+                <Col>
+                  <Title level={4} style={{ margin: 0 }}>
                     {user.first_name} {user.last_name}
                   </Title>
-                  <Text type="secondary">@{user.username}</Text>
-                </motion.div>
-              </motion.div>
-
-              <motion.div
-                variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                custom={0}
-                style={{ marginTop: 24 }}
-              >
-                <AnimatePresence mode="wait">
-                  {!editing ? (
-                    <motion.div
-                      key="edit-mode"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
+                  <Text type="secondary">Perfil de usuario</Text>
+                </Col>
+              </Row>
+            </Col>
+            <Col>
+              <Row gutter={8}>
+                {!editing ? (
+                  <Col>
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={() => setEditing(true)}
                     >
-                      <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        block
-                        onClick={() => {
-                          setEditing(true);
-                        }}
-                      >
-                        Editar Perfil
-                      </Button>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="save-mode"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-                    >
+                      Editar
+                    </Button>
+                  </Col>
+                ) : (
+                  <>
+                    <Col>
                       <Button
                         type="primary"
                         icon={<SaveOutlined />}
-                        block
-                        loading={loading}
                         onClick={handleSave}
+                        loading={loading}
                       >
-                        Guardar Cambios
+                        Guardar
                       </Button>
-                      <Button
-                        icon={<CloseOutlined />}
-                        block
-                        onClick={handleCancel}
-                      >
+                    </Col>
+                    <Col>
+                      <Button icon={<CloseOutlined />} onClick={handleCancel}>
                         Cancelar
                       </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <motion.div
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  custom={1}
-                  style={{ marginTop: 8 }}
-                >
+                    </Col>
+                  </>
+                )}
+                <Col>
                   <Button
-                    block
                     danger
                     icon={<LogoutOutlined />}
                     onClick={handleLogout}
                   >
                     Cerrar sesión
                   </Button>
-                </motion.div>
-              </motion.div>
-            </Col>
-
-            {/* Información del usuario */}
-            <Col xs={24} md={18}>
-              <Divider>
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  style={{ display: "inline-block", fontSize: 18  }}
-                >
-                  Información de Contacto
-                </motion.span>
-              </Divider>
-
-              <Form layout="vertical" form={form}>
-                <Row gutter={16}>
-                  {[
-                    { label: "Usuario", name: "username", icon: <MailOutlined />, value: user.username? user.username : "No proporcionado" },
-                    { label: "Correo", name: "email", icon: <MailOutlined />, value: user.email ? user.email : "No proporcionado" },
-                    { label: "Teléfono", name: "phone", icon: <PhoneOutlined />, value: user.phone ? user.phone : "Numero no proporcionado" },
-                    {
-                      label: "Documento",
-                      name: "document",
-                      icon: <IdcardOutlined />,
-                      value: `Documento:  ${user.document ? user.document : "No proporcionado"}`,
-                    },
-                    // {
-                    //   label: "Género",
-                    //   name: "gender",
-                    //   icon: <TeamOutlined />,
-                    //   value: `${user.age ? user.age : 0} años `,
-                    // },
-                    {
-                      label: "Fecha de Nacimiento",
-                      name: "birth_date",
-                      icon: <CalendarOutlined />,
-                      value: user.birth_date ? dayjs(user.birth_date).format("DD/MM/YYYY") : "No proporcionado",
-                    },
-                  ].map((field, index) => (
-                    <Col xs={24} md={12} key={field.name}>
-                      <motion.div
-                        variants={itemVariants}
-                        custom={index + 2}
-                        initial="hidden"
-                        animate="visible"
-                        whileHover={editing ? "edit" : ""}
-                      >
-                        {editing ? (
-                          field.name === "birth_date" ? (
-                            <Form.Item name="birth_date" label="Fecha de Nacimiento">
-                              <DatePicker
-                                format="YYYY-MM-DD"
-                                style={{ width: "100%" }}
-                                suffixIcon={<CalendarOutlined />}
-                              />
-                            </Form.Item>
-                          ) : field.name === "gender" ? (
-                            <Form.Item name="gender" label="Género">
-                              <Select
-                                options={[
-                                  { value: "Masculino", label: "Masculino" },
-                                  { value: "Femenino", label: "Femenino" },
-                                ]}
-                                suffixIcon={<TeamOutlined />}
-                              />
-                            </Form.Item>
-                          ) : (
-                            <Form.Item
-                              name={field.name}
-                              label={field.label}
-                              rules={[{ required: true }]}
-                            >
-                              <Input prefix={field.icon} />
-                            </Form.Item>
-                          )
-                        ) : (
-                          <Text>
-                            {field.icon}
-                            <span style={{ marginLeft: 8, fontSize: 18 }}>
-                              {field.name === "birth_date"
-                                ? `Fecha de nacimiento: ${field.value}`
-                                : field.value}
-                            </span>
-                          </Text>
-                        )}
-                      </motion.div>
-                    </Col>
-                  ))}
-                </Row>
-              </Form>
+                </Col>
+              </Row>
             </Col>
           </Row>
+        </Card>
+
+        {/* Cuerpo con info y foto */}
+        <Row gutter={[24, 24]}>
+          {/* Información personal */}
+          <Col xs={24} md={12}>
+            <Card
+              title="Información personal"
+              style={{
+                borderRadius: 16,
+                boxShadow: "none",
+                background: "none",
+              }}
+            >
+              <Form
+                layout="vertical"
+                form={form}
+                onValuesChange={(changedValues) => {
+                  // Sincronizar email con username en tiempo real
+                  if (changedValues.username !== undefined) {
+                    form.setFieldsValue({ email: changedValues.username });
+                  }
+                }}
+              >
+                <Form.Item
+                  label="Nombre de usuario"
+                  name="username"
+                  rules={[{ required: true, message: 'Por favor ingresa un nombre de usuario' }]}
+                >
+                  <Input prefix={<UserOutlined />} disabled={!editing} />
+                </Form.Item>
+
+                {/* Campo oculto: email se sincroniza con username */}
+                <Form.Item name="email" noStyle>
+                  <Input type="hidden" />
+                </Form.Item>
+
+                <Form.Item label="Teléfono" name="phone">
+                  <Input prefix={<PhoneOutlined />} disabled={!editing} />
+                </Form.Item>
+                <Form.Item label="Documento" name="document">
+                  <Input prefix={<IdcardOutlined />} disabled={!editing} />
+                </Form.Item>
+                <Form.Item label="Fecha de nacimiento" name="birth_date">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD/MM/YYYY"
+                    suffixIcon={<CalendarOutlined />}
+                    disabled={!editing}
+                  />
+                </Form.Item>
+              </Form>
+            </Card>
+          </Col>
+
+          {/* Imagen ilustrativa */}
+          <Col xs={24} md={12}>
+            <Card
+              style={{
+                border: "none",
+                height: "100%",
+                borderRadius: 16,
+                boxShadow: "none",
+                background: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src={peopleImg}
+                alt="Ilustración"
+                style={{
+                  width: "300px",
+                  // maxWidth: "100%",
+                  // maxHeight: 350,
+                  borderRadius: 16,
+                  objectFit: "cover",
+                }}
+              />
+            </Card>
+          </Col>
+        </Row>
       </motion.div>
     </>
   );

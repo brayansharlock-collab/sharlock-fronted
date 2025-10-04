@@ -42,9 +42,9 @@ export default function FavoriteProducts() {
             name={p.name}
             image={p.image_cover}
             images={p.images}
-            price={p.price}
+            price={p.final_price_discount}
             rating={p.rating}
-            originalPrice={p.originalPrice}
+            originalPrice={p.final_price}
             isNew={p.isNew}
             initialIsFavorite={true}
           />

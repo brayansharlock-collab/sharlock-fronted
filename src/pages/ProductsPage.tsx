@@ -363,17 +363,6 @@ export const ProductsPage: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: "100vh" }}>
-            {/* <div
-                style={{
-                    position: "fixed",
-                    width: "100%",
-                    height: "100vh",
-                    zIndex: 0,
-                }}
-            >
-                <Silk speed={10} scale={1} color="#e6e1d7" noiseIntensity={1.5} rotation={0} />
-            </div> */}
-
             <div
                 style={{
                     zIndex: 2,
@@ -529,16 +518,16 @@ export const ProductsPage: React.FC = () => {
                             ) : (
                                 <Row gutter={[20, 20]}>
                                     {filteredProducts.map((product: any) => {
-                                        const cleanPrice = parseFloat(String(product.price).replace(/\./g, "")) || 0;
+                                        const cleanPrice = parseFloat(String(product.final_price).replace(/\./g, "")) || 0;
                                         const originalPrice =
-                                            product.discount && product.active_discount ? cleanPrice + cleanPrice * 0.2 : undefined;
+                                            product.final_price_discount && product.active_discount ? cleanPrice + cleanPrice * 0.2 : undefined;
                                         return (
                                             <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
                                                 <ProductCard
                                                     id={product.id}
                                                     name={product.name}
                                                     image={product.image_cover}
-                                                    price={cleanPrice}
+                                                    price={product.final_price_discount}
                                                     originalPrice={originalPrice}
                                                     rating={product.rating || 4.5}
                                                     isNew={false}

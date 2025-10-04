@@ -231,7 +231,7 @@ export default function AddressList() {
         </Modal>
       </div>
       {addresses.length > 0 ? (
-        <div style={{ textAlign: "left", width: "100%", marginTop: 16 }}>
+        <div style={{ textAlign: "left", width: "100%", marginTop: 16, }}>
           <Button
             type="primary"
             icon={<PlusOutlined />}

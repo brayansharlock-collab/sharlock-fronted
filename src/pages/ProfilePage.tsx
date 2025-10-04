@@ -6,8 +6,6 @@ import { useNavigate } from "react-router-dom";
 import {
   UserOutlined,
   HomeOutlined,
-  CreditCardOutlined,
-  ShoppingCartOutlined,
   SearchOutlined,
   ArrowLeftOutlined,
   HeartOutlined,
@@ -20,8 +18,6 @@ import Silk from "../components/animations/Silk";
 import CardList from "../components/profile/CardList";
 import UserInfo from "../components/profile/UserInfo";
 import AddressList from "../components/profile/AddressList";
-import OrderHistory from "../components/profile/OrderHistory";
-import ProductTracking from "../components/profile/ProductTracking";
 import FavoriteProducts from "../components/profile/FavoriteProducts";
 
 const { useBreakpoint } = Grid;
@@ -30,8 +26,7 @@ const menuItems = [
   { key: "user", label: "Tus datos", icon: <UserOutlined /> },
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
   { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
-  { key: "cards", label: "Mis tarjetas", icon: <CreditCardOutlined /> },
-  { key: "orders", label: "Historial de pedidos", icon: <ShoppingCartOutlined /> },
+  // { key: "orders", label: "Historial de pedidos", icon: <ShoppingCartOutlined /> },
   { key: "tracking", label: "Seguimiento de productos", icon: <SearchOutlined /> },
 ];
 
@@ -49,10 +44,6 @@ export default function ProfilePage() {
         return <AddressList />;
       case "cards":
         return <CardList />;
-      case "orders":
-        return <OrderHistory />;
-      case "tracking":
-        return <ProductTracking />;
       case "favorites":
         return <FavoriteProducts />;
       default:

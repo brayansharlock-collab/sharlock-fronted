@@ -92,9 +92,9 @@ export const ProductCategoryShowcase: React.FC<ProductCategoryShowcaseProps> = (
                         justifyContent: "center",
                     }}
                 >
-                    <div style={{ padding: "24px" }}>
+                    <div style={{ padding: 54, height: "-webkit-fill-available" }}>
                         <Title
-                            level={2}
+                            level={1}
                             style={{
                                 margin: "0 0 12px 0",
                                 fontWeight: 700,
@@ -115,7 +115,7 @@ export const ProductCategoryShowcase: React.FC<ProductCategoryShowcaseProps> = (
                                     margin: 0,
                                     lineHeight: 1.7,
                                     color: "#374151",
-                                    fontSize: "15px",
+                                    fontSize: "20px",
                                     whiteSpace: "pre-line",
                                 }}
                             >
@@ -124,16 +124,7 @@ export const ProductCategoryShowcase: React.FC<ProductCategoryShowcaseProps> = (
                         </AnimatePresence>
 
                         {/* 👇 Atributos adicionales */}
-                        <div style={{ marginTop: 16 }}>
-                            <p style={{ margin: "4px 0", fontWeight: 600, color: "#111827" }}>
-                                Precio: <span style={{ color: "#16a34a" }}>${product.price}</span>
-                            </p>
-                            {product.active_discount ? (
-                                <p style={{ margin: "4px 0", fontWeight: 600, color: "#dc2626" }}>
-                                    Descuento: ${product.discount}
-                                </p>
-                            ) : null}
-
+                        <div style={{ marginTop: 16, color: "black"}}>
                             {/* Stock con tallas */}
                             <div style={{ marginTop: 12 }}>
                                 <p style={{ fontWeight: 600, marginBottom: 6 }}>Disponibilidad:</p>

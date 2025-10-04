@@ -33,6 +33,8 @@ interface Product {
   id: number
   name: string
   description: string
+  final_price: string;
+  final_price_discount: string;
   image_cover: string
   stock_detail: StockDetail[]
   price: string
@@ -327,8 +329,8 @@ const ProductDetail = () => {
             <motion.div variants={itemVariants}>
               <ProductInfo
                 name={product.name}
-                price={product.price}
-                discount={product.discount}
+                price={product.final_price}
+                discount={product.final_price_discount}
                 activeDiscount={product.active_discount}
               />
 
