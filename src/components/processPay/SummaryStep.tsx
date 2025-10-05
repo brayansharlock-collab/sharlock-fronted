@@ -101,7 +101,7 @@ export default function SummaryStep({ checkoutData }: any) {
       </Card>
 
       {/* Productos */}
-      <Card size="small" style={{ marginBottom: "1rem", height: 300, overflowY: "auto" }}>
+      <Card size="small" style={{ marginBottom: "1rem", height: 200, overflowY: "auto" }}>
         <List
           loading={loading}
           dataSource={items}

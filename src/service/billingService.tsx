@@ -1,9 +1,8 @@
 // src/service/billingService.ts
-import axios from 'axios';
 import { cartService } from './cartService';
-import { getDecryptedCookie, removeCookie } from '../utils/encrypt';
-
-const RECEIPT_API = 'http://localhost:8080/api/products/receipt/';
+import { getDecryptedCookie, removeCookie, setEncryptedCookie } from '../utils/encrypt';
+import { API_URL_ALL } from './urls';
+import api from './api';
 
 interface AppliedCoupon {
   id: number;
@@ -25,7 +24,7 @@ export const billingService = {
       const cartData = await cartService.getCart();
       let cartIds: number[] = [];
 
-      const results = cartData?.results || cartData?.data || cartData || [];
+      const results = cartData?.data?.results || cartData?.data || cartData || [];
       if (Array.isArray(results)) {
         cartIds = results
           .map((item: any) => (typeof item === 'object' ? item.id : item))
@@ -36,28 +35,51 @@ export const billingService = {
         throw new Error('Carrito vacío o sin IDs válidos');
       }
 
-      // 4. Construir payload
       const payload = {
         is_active: true,
         shopping_cart: cartIds,
         coupon: couponId,
         iva: 9,
         shipment_cost: 0,
-        total:numericTotal,
+        total: numericTotal,
       };
 
-      // 5. Enviar a la API
-      const response = await axios.post(RECEIPT_API, payload, {
+      const response = await api.post(API_URL_ALL.RECIPIENT, payload, {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      removeCookie('appliedCo');
-      removeCookie('checkout_total');
-      
+      const receiptId = response.data?.id;
+      if (receiptId) {
+        setEncryptedCookie('receipt_id', receiptId, 1);
+      } else {
+        console.warn('No se recibió ID de la factura');
+      }
+
+
       return response.data;
     } catch (error: any) {
       console.error('Error al crear recibo:', error);
       throw new Error(error.response?.data?.message || 'Error al procesar la factura');
     }
+  },
+
+  updateReceiptStatus: async (statusData: any) => {
+    const receiptId = getDecryptedCookie('receipt_id');
+
+    if (!receiptId) {
+      throw new Error('No se encontró el ID de la factura. La sesión puede haber expirado.');
+    }
+
+    const response = await api.put(`${API_URL_ALL.RECIPIENT}${receiptId}/`, statusData, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    removeCookie('appliedCo');
+    removeCookie('checkout_total');
+
+    return response.data;
+  },
+
+  getReceiptId: (): number | null => {
+    return getDecryptedCookie('receipt_id');
   },
 };

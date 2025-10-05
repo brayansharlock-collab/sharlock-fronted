@@ -23,6 +23,7 @@ export const API_URL_ALL = {
     CART: "/api/products/shopping-cart/",
     CART_CLEAR: "api/products/delete-shopping-cart/",
     COUPON: "api/products/coupon/",
+    RECIPIENT: "api/products/receipt/",
 
     BANNER: "api/accounts/banner/",
 

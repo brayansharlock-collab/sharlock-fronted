@@ -16,39 +16,59 @@ export default function FinalStep() {
   const isPending = location.pathname === '/Checkout/pending';
 
   const [loading, setLoading] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // null = cargando, true/false = resultado
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // null = cargando
+
+  // Extraer payment_id de la URL
+  const getPaymentIdFromUrl = (): string | null => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('payment_id');
+  };
 
   useEffect(() => {
-    if (isSuccess) {
-      const referrer = document.referrer;
-      const isFromMercadoPago = referrer.includes('mercadopago.com');
+    const processPaymentResult = async () => {
+      let fix_id: number | null = null;
+      if (isSuccess) fix_id = 2;
+      else if (isPending) fix_id = 3;
+      else if (isFail) fix_id = 4;
 
-      if (!isFromMercadoPago) {
-        console.warn('Acceso no autorizado: no viene de Mercado Pago');
-        setIsAuthorized(false);
-        message.error('Acceso no permitido');
-        return;
+      if (fix_id === null) return;
+
+      if (isSuccess) {
+        const referrer = document.referrer;
+        const isFromMercadoPago = referrer.includes('mercadopago.com');
+
+        if (!isFromMercadoPago) {
+          console.warn('Acceso no autorizado: no viene de Mercado Pago');
+          setIsAuthorized(false);
+          message.error('Acceso no permitido');
+          return;
+        }
+        setIsAuthorized(true);
       }
 
-      setIsAuthorized(true);
+      const payment_id = getPaymentIdFromUrl();
+      if (!payment_id) {
+        console.warn('No se encontró payment_id en la URL');
+      }
 
-      // Procesar facturación
-      const processBilling = async () => {
-        setLoading(true);
-        try {
-          await billingService.createReceipt();
-          console.log('Factura generada con éxito');
-        } catch (err: any) {
-          console.error('Error en facturación:', err);
-          message.error(err.message || 'Error al generar la factura');
-        } finally {
-          setLoading(false);
-        }
-      };
+      setLoading(true);
+      try {
+        await billingService.updateReceiptStatus({
+          fix_id,
+          payment_id_transation: payment_id || undefined,
+        });
+      } catch (err: any) {
+        console.error('Error al actualizar la factura:', err);
+        message.error(err.message || 'Error al procesar el resultado del pago');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      processBilling();
+    if (isSuccess || isPending || isFail) {
+      processPaymentResult();
     }
-  }, [isSuccess]);
+  }, [isSuccess, isPending, isFail]);
 
   if (isSuccess && isAuthorized === false) {
     return (
@@ -107,7 +127,6 @@ export default function FinalStep() {
   return (
     <>
       <SharlockLogo />
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -141,7 +160,7 @@ export default function FinalStep() {
             justifyContent: "center"
           }}
         >
-          {isSuccess && isAuthorized === true ? (
+          {isSuccess && isAuthorized !== false ? (
             <Result
               icon={
                 <video
@@ -159,7 +178,7 @@ export default function FinalStep() {
               }
               title="Compra finalizada con éxito"
               subTitle={loading
-                ? "Generando factura..."
+                ? "Actualizando estado del pago..."
                 : "Gracias por tu compra. Te enviaremos un correo con el detalle."
               }
               extra={[

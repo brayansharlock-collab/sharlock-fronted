@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Steps, Button, Row, Col } from "antd";
+import { Card, Steps, Button, Row, Col, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 
 import AddressStep from "../components/processPay/AddressStep";
@@ -9,6 +9,7 @@ import Silk from "../components/animations/Silk";
 import { mercadoPagoService } from "../service/mercadoPagoService";
 import { getDecryptedCookie } from "../utils/encrypt";
 import SharlockLogo from "../components/ui/SharlockLogo";
+import { billingService } from "../service/billingService";
 
 const { Step } = Steps;
 
@@ -16,6 +17,7 @@ export default function ProcessPay() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [checkoutData, setCheckoutData] = useState({
     selectedAddress: null as string | null,
@@ -42,20 +44,28 @@ export default function ProcessPay() {
   const next = () => setCurrent((prev) => prev + 1);
   const prev = () => setCurrent((prev) => prev - 1);
 
-  const pay = async () => {
+  const handlePay = async () => {
     setLoading(true);
-    const total = getDecryptedCookie("checkout_total");
-    if (!total) {
-      console.error("No se encontró el total en cookies");
-      return;
-    }
-    let payload = {
-      amount: total,
-      title: "Compra en sharklock",
-    };
+    try {
+      await billingService.createReceipt();
 
-    await mercadoPagoService.startPayMercadopago(payload);
-    setLoading(false);
+      const total = getDecryptedCookie("checkout_total");
+      if (!total) {
+        messageApi.error("No se encontró el monto a pagar");
+        return;
+      }
+      const payload = {
+        amount: 1100,
+        title: "Compra en Sharklock",
+      };
+
+      await mercadoPagoService.startPayMercadopago(payload);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || err.message || "Error al preparar el pago";
+      messageApi.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -72,7 +82,7 @@ export default function ProcessPay() {
   return (
     <div style={{ display: "flex", justifyContent: "center", height: "100vh", alignItems: "center" }}>
       <SharlockLogo />
-
+      {contextHolder}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -132,7 +142,7 @@ export default function ProcessPay() {
                 <Button
                   type="primary"
                   block={window.innerWidth < 576}
-                  onClick={pay}
+                  onClick={handlePay}
                   disabled={loading}
                   loading={loading}
                 >
