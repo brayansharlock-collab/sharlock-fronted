@@ -9,9 +9,18 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
     allowedHosts: [
-      "avowedly-travellable-meta.ngrok-free.dev",
-      "sharlockstore.com",
+      'sharlockstore.com',
+      'avowedly-travellable-meta.ngrok-free.dev',
     ],
-  }
+    hmr: {
+      host: 'sharlockstore.com', 
+      protocol: 'wss',
+      clientPort: 443 
+    },
+  },
+
 })
