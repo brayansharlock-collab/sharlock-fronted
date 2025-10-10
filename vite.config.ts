@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     allowedHosts: [
       "avowedly-travellable-meta.ngrok-free.dev",
-      "http://sharlockstore.com",
+      "sharlockstore.com",
     ],
   }
 })
