@@ -1,8 +1,17 @@
 services:
   sharlock-frontend:
     build: .
+    container_name: pan
     ports:
       - "5173:5173"
     volumes:
       - .:/app
       - /app/node_modules
+    env_file:
+      - .env
+    networks:
+      - sharlock
+
+networks:
+  sharlock:
+    external: true 
