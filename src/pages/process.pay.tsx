@@ -55,7 +55,7 @@ export default function ProcessPay() {
         return;
       }
       const payload = {
-        amount: 1100,
+        amount: total,
         title: "Compra en Sharklock",
       };
 
