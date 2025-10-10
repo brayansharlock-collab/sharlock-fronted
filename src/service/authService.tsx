@@ -1,4 +1,5 @@
 // src/services/authService.ts
+import { removeCookie, setEncryptedCookie } from '../utils/encrypt';
 import { tokenStorage } from '../utils/token';
 import api from './api'; // Asegúrate de que este cliente Axios esté configurado correctamente
 import { API_URL_ALL } from './urls';
@@ -7,6 +8,7 @@ import { API_URL_ALL } from './urls';
 interface LoginResponse {
   token: string;
   refresh: string;
+  roll: string;
   user: any; // Puedes tipar mejor si tienes una interfaz de User
 }
 
@@ -31,18 +33,31 @@ interface ResetPasswordResponse {
 export const authService = {
   login: async (username: string, password: string, rememberMe: boolean): Promise<any> => {
     const { data } = await api.post<LoginResponse>(API_URL_ALL.AUTH, { username, password });
+    
     tokenStorage.setAccessToken(data.token);
-
     if (rememberMe) {
       tokenStorage.setRefreshToken(data.refresh);
     }
 
-    return data.user;
+    const user = data.user;
+    const userRole = user.roll?.[0]?.name || "Sin rol";
+
+    const userData = {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      role: userRole,
+    };
+
+    setEncryptedCookie("data", userData, 4);
+
+    return user;
   },
 
   logout: () => {
     tokenStorage.removeAccessToken();
     tokenStorage.removeRefreshToken();
+    removeCookie("data");
   },
 
   getCurrentUser: async () => {

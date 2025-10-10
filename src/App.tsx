@@ -16,7 +16,7 @@ import Register from './pages/register';
 import { ProductsPage } from './pages/ProductsPage';
 import FinalStep from './components/processPay/SuccessStep';
 import RequestResetPassword from './pages/RequestResetPassword';
-import ResetPassword from './pages/resetPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (

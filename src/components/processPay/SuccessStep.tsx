@@ -1,7 +1,7 @@
 // src/pages/FinalStep.tsx
 import { Result, Button, message } from "antd";
 import { motion } from "framer-motion";
-import successVideo from "../../assets/ilustrations/success.mp4";
+import successVideo from "../../assets/ilustrations/Success.mp4";
 import warningVideo from "../../assets/ilustrations/Warning_Status.gif";
 import { Link, useLocation } from "react-router-dom";
 import Silk from "../animations/Silk";

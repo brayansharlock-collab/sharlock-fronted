@@ -5,12 +5,36 @@ import { addressService } from "../../service/addressService";
 
 const { Option } = Select;
 
-export default function AddressFormModal({ open, onClose, onSaved }: any) {
+interface City {
+  id: number;
+  name: string;
+}
+
+interface Department {
+  id: number;
+  name: string;
+  city: City[];
+}
+
+interface AddressType {
+  id: number;
+  name: string;
+}
+
+interface AddressFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+export default function AddressFormModal({ open, onClose, onSaved }: AddressFormModalProps) {
   const [form] = Form.useForm();
-  const [departments, setDepartments] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [addressTypes, setAddressTypes] = useState([]);
-  const [loading, setLoading] = useState(false);
+
+  // ✅ Tipos explícitos
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [addressTypes, setAddressTypes] = useState<AddressType[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (open) {
@@ -24,15 +48,16 @@ export default function AddressFormModal({ open, onClose, onSaved }: any) {
         addressService.getDepartments(),
         addressService.getAddressTypes(),
       ]);
-      setDepartments(deps);
-      setAddressTypes(types);
+
+      setDepartments(deps as Department[]);
+      setAddressTypes(types as AddressType[]);
     } catch (err) {
       message.error("Error al cargar opciones");
     }
   };
 
   const handleDepartmentChange = (depId: number) => {
-    const dep = departments.find((d: any) => d.id === depId);
+    const dep = departments.find((d) => d.id === depId);
     setCities(dep?.city || []);
     form.setFieldsValue({ city: undefined });
   };
@@ -58,7 +83,9 @@ export default function AddressFormModal({ open, onClose, onSaved }: any) {
       open={open}
       onCancel={onClose}
       footer={[
-        <Button key="cancel" onClick={onClose}>Cancelar</Button>,
+        <Button key="cancel" onClick={onClose}>
+          Cancelar
+        </Button>,
         <Button key="save" type="primary" loading={loading} onClick={handleSave}>
           Guardar
         </Button>,
@@ -75,7 +102,11 @@ export default function AddressFormModal({ open, onClose, onSaved }: any) {
             { name: "postal_code", label: "Código Postal" },
           ].map((f) => (
             <Col span={12} key={f.name}>
-              <Form.Item name={f.name} label={f.label} rules={f.required ? [{ required: true }] : []}>
+              <Form.Item
+                name={f.name}
+                label={f.label}
+                rules={f.required ? [{ required: true, message: `Ingrese ${f.label.toLowerCase()}` }] : []}
+              >
                 <Input />
               </Form.Item>
             </Col>
@@ -84,8 +115,10 @@ export default function AddressFormModal({ open, onClose, onSaved }: any) {
           <Col span={12}>
             <Form.Item name="department" label="Departamento" rules={[{ required: true }]}>
               <Select placeholder="Seleccione" onChange={handleDepartmentChange}>
-                {departments.map((d: any) => (
-                  <Option key={d.id} value={d.id}>{d.name}</Option>
+                {departments.map((d) => (
+                  <Option key={d.id} value={d.id}>
+                    {d.name}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
@@ -94,8 +127,10 @@ export default function AddressFormModal({ open, onClose, onSaved }: any) {
           <Col span={12}>
             <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
               <Select placeholder="Seleccione">
-                {cities.map((c: any) => (
-                  <Option key={c.id} value={c.id}>{c.name}</Option>
+                {cities.map((c) => (
+                  <Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
@@ -104,8 +139,10 @@ export default function AddressFormModal({ open, onClose, onSaved }: any) {
           <Col span={12}>
             <Form.Item name="type_of_address" label="Tipo de Dirección" rules={[{ required: true }]}>
               <Select>
-                {addressTypes.map((t: any) => (
-                  <Option key={t.id} value={t.id}>{t.name}</Option>
+                {addressTypes.map((t) => (
+                  <Option key={t.id} value={t.id}>
+                    {t.name}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
