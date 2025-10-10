@@ -1,7 +1,7 @@
 services:
   sharlock-frontend:
     build: .
-    container_name: pan
+    container_name: sharlock_frontend
     ports:
       - "5173:5173"
     volumes:
