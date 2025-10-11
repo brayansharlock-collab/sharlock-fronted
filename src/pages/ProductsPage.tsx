@@ -8,28 +8,28 @@ import { CloseOutlined, SearchOutlined, ShoppingCartOutlined, UserOutlined } fro
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cartService } from "../service/cartService";
-// import searchAnimation from "../../src/assets/ilustrations/search.gif";
 
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
 
 export const ProductsPage: React.FC = () => {
     const [products, setProducts] = useState<any[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
-    const [subcategoryFilters, setSubcategoryFilters] = useState<any[]>([]);
-    const [showSearch, setShowSearch] = useState(false);
-
-    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [selectedFilters, setSelectedFilters] = useState<number[]>([]);
+    const [subcategoryFilters, setSubcategoryFilters] = useState<any[]>([]);
+    const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
 
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
     const [loading, setLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState<string>("");
     const [restored, setRestored] = useState(false);
+    const [showSearch, setShowSearch] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
+    
+    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+    const [searchTerm, setSearchTerm] = useState<string>("");
     const [cartCount, setCartCount] = useState(2);
     const screens = useBreakpoint();
     const lastFetchId = useRef(0);
@@ -128,7 +128,6 @@ export const ProductsPage: React.FC = () => {
         }
     };
 
-
     // Construye params para la API de productos
     const buildParams = () => {
         const body: any = {};
@@ -207,7 +206,7 @@ export const ProductsPage: React.FC = () => {
     useEffect(() => {
         if (!restored) return;
         fetchProducts();
-    }, [selectedCategory, selectedSubcategories, selectedFilters, priceRange, searchTerm]);
+    }, [restored, selectedCategory, selectedSubcategories, selectedFilters, priceRange, searchTerm]);
 
     // resetear filtros
     const resetFilters = () => {
@@ -506,13 +505,6 @@ export const ProductsPage: React.FC = () => {
                                 <div style={{ textAlign: "center", paddingTop: 40 }}>
                                     <Empty
                                         description="No se encontraron productos"
-                                    // image={
-                                    //     <img
-                                    //         src={searchAnimation}
-                                    //         alt="Sin resultados"
-                                    //          style={{ width: "20%", height: 150,  maxWidth: 320, opacity: 0.95 }} 
-                                    //     />
-                                    // }
                                     />
                                 </div>
                             ) : (
@@ -521,9 +513,14 @@ export const ProductsPage: React.FC = () => {
                                         const cleanPrice = parseFloat(String(product.final_price).replace(/\./g, "")) || 0;
                                         const originalPrice =
                                             product.final_price_discount && product.active_discount ? cleanPrice + cleanPrice * 0.2 : undefined;
+                                        const images =
+                                            product?.stock_detail?.[0]?.media
+                                                ?.filter((m: any) => m.is_image)
+                                                ?.map((m: any) => m.file) || [];
                                         return (
                                             <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
                                                 <ProductCard
+                                                    images={images}
                                                     id={product.id}
                                                     name={product.name}
                                                     image={product.image_cover}

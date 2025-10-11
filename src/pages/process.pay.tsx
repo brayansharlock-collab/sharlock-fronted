@@ -56,7 +56,7 @@ export default function ProcessPay() {
       }
       const payload = {
         amount: total,
-        title: "Compra en Sharklock",
+        title: "Compra en Sharlock",
       };
 
       await mercadoPagoService.startPayMercadopago(payload);

@@ -18,14 +18,13 @@ export default function FinalStep() {
   const [loading, setLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // null = cargando
 
-  // Extraer payment_id de la URL
-  const getPaymentIdFromUrl = (): string | null => {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('payment_id');
-  };
-
   useEffect(() => {
+    let executed = false;
+
     const processPaymentResult = async () => {
+      if (executed) return;
+      executed = true;
+
       let fix_id: number | null = null;
       if (isSuccess) fix_id = 2;
       else if (isPending) fix_id = 3;
@@ -46,12 +45,9 @@ export default function FinalStep() {
         setIsAuthorized(true);
       }
 
-      const payment_id = getPaymentIdFromUrl();
-      if (!payment_id) {
-        console.warn('No se encontró payment_id en la URL');
-      }
-
+      const payment_id = new URLSearchParams(window.location.search).get('payment_id');
       setLoading(true);
+
       try {
         await billingService.updateReceiptStatus({
           fix_id,
@@ -195,11 +191,21 @@ export default function FinalStep() {
               title="Pago rechazado"
               subTitle="Tu pago no pudo ser procesado. Por favor revisa los datos e intenta nuevamente."
               extra={[
-                <Link to="/checkout" style={{ textDecoration: 'none' }} key="retry">
-                  <Button type="dashed">
-                    Volver a realizar el proceso de pago
-                  </Button>
-                </Link>
+                <Button
+                  key="retry"
+                  type="dashed"
+                  onClick={() => {
+                    const lastPath = localStorage.getItem("lastVisitedPath");
+                    if (lastPath) {
+                      localStorage.removeItem("lastVisitedPath");
+                      window.location.href = lastPath;
+                    } else {
+                      window.location.href = "/checkout";
+                    }
+                  }}
+                >
+                  Volver a realizar el proceso de pago
+                </Button>
               ]}
             />
           ) : isPending ? (
@@ -214,6 +220,13 @@ export default function FinalStep() {
                   }}
                 />
               }
+              extra={[
+                <Link to="/" style={{ textDecoration: 'none' }} key="retry">
+                  <Button type="dashed">
+                    Volver al inicio
+                  </Button>
+                </Link>
+              ]}
               title="Pago pendiente"
               subTitle="Tu pago está siendo procesado. Te notificaremos cuando se haya completado."
             />

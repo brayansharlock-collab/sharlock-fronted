@@ -5,6 +5,7 @@ import { bannersService } from "../service/banners";
 import { ProductCategoryShowcase } from "../components/home/ProductCategoryShowcase";
 import { motion, AnimatePresence } from "framer-motion";
 import { productService } from "../service/productService";
+import FooterHome from "../components/ui/footerHome";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -121,20 +122,6 @@ const Home: React.FC = () => {
                                 gap: 20,
                             }}
                         >
-                            {/* GIF candado */}
-                            {/* <motion.img
-          src={lock}
-          alt="Candado animado"
-          style={{ width: 120, height: 120 }}
-          initial={{ opacity: 1 }}
-          animate={{
-            opacity: isLoading ? 1 : 0.9,
-            scale: isLoading ? 1 : 0.95,
-          }}
-          transition={{ duration: 1 }}
-        /> */}
-
-
                             {/* Texto SHARLOCK */}
                             <motion.h1
                                 initial={{ opacity: 0, y: 40, scale: 0.9 }}
@@ -191,7 +178,7 @@ const Home: React.FC = () => {
                                             bottom: 0,
                                             left: 0,
                                             width: "100%",
-                                            height: "25%",
+                                            height: "20%",
                                             background:
                                                 "linear-gradient(to bottom, transparent, #e6e1d7)",
                                         }}
@@ -222,7 +209,7 @@ const Home: React.FC = () => {
                                         style={{ padding: "0 20px" }}
                                     >
                                         {group.map((cat: Category,) => (
-                                            <Col style={{width: "200px", display: "flex", justifyContent: "center"}} key={cat.id}>
+                                            <Col style={{ width: "200px", display: "flex", justifyContent: "center" }} key={cat.id}>
                                                 <Card
                                                     hoverable
                                                     style={{
@@ -267,6 +254,8 @@ const Home: React.FC = () => {
                         categoryName={cat.name}
                     />
                 ))}
+
+            <FooterHome />
         </>
     );
 };

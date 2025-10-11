@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import Silk from "../components/animations/Silk";
 import { cartService } from "../service/cartService";
 import { getDecryptedCookie, removeCookie } from "../utils/encrypt";
+import SharlockLogo from "../components/ui/SharlockLogo";
 
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -100,6 +101,7 @@ export default function CartPage() {
 
   return (
     <>
+      <SharlockLogo />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

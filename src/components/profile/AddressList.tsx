@@ -98,10 +98,26 @@ export default function AddressList() {
 
   return (
     <>
-
+      {addresses.length > 0 ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            width: "100%",
+            marginBottom: 16,
+          }}
+        >
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => openModal()}
+          >
+            Agregar otra dirección
+          </Button>
+        </div>
+      ) : null}
       <div style={{ maxHeight: "65vh", overflowY: "auto" }}>
         {contextHolder}
-
         <Row gutter={[0, 16]}>
           {addresses.length > 0 ? (
             addresses.map((addr) => (
@@ -230,17 +246,7 @@ export default function AddressList() {
           </Form>
         </Modal>
       </div>
-      {addresses.length > 0 ? (
-        <div style={{ textAlign: "left", width: "100%", marginTop: 16, }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => openModal()}
-          >
-            Agregar otra dirección
-          </Button>
-        </div>
-      ) : null}
+
     </>
 
   );

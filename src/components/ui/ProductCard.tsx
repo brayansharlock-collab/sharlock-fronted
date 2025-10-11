@@ -12,7 +12,7 @@ interface ProductCardProps {
   image?: string;
   images?: string[];
   price: number;
-  quantity?: number; // Opcional
+  quantity?: number;
   rating?: number;
   originalPrice?: number;
   isNew?: boolean;
@@ -36,18 +36,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const allImages = [image, ...images].filter(Boolean) as string[];
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
-
-  // useEffect(() => {
-  //   const checkFavorite = async () => {
-  //     try {
-  //       const favorite = await productService.isFavorite(id);
-  //       setIsFavorite(favorite);
-  //     } catch (error) {
-  //       console.error("Error checking favorite status:", error);
-  //     }
-  //   };
-  //   checkFavorite();
-  // }, [id]);
 
   const toggleFavorite = async () => {
     if (loading) return;

@@ -12,14 +12,13 @@ const AnimatedNav: React.FC = () => {
     const isHome = location.pathname === '/';
 
     const { scrollY } = useScroll();
-    const [cartCount, setCartCount] = useState(2);
+    const [cartCount, setCartCount] = useState(0);
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
         const fetchCartCount = async () => {
             try {
                 const data = await cartService.getCart();
-                // 👇 El count viene directo de la API
                 setCartCount(data?.data?.count || 0);
             } catch (err) {
                 console.error("Error al obtener el carrito", err);
@@ -76,7 +75,6 @@ const AnimatedNav: React.FC = () => {
                     zIndex: 1000,
                     transition: 'all 0.3s ease-in', justifyContent: 'space-between',
                     overflow: 'visible',
-                    backdropFilter: "blur(1px)",
                     padding: '0 20px',
                 }}
             >
@@ -156,56 +154,6 @@ const AnimatedNav: React.FC = () => {
                 </motion.div>
 
             </motion.nav>) : (null
-            // <nav
-            //     style={{
-            //         position: 'fixed',
-            //         top: 0,
-            //         left: 0,
-            //         right: 0,
-            //         height: '70px',
-            //         background: isScrolled
-            //             ? 'linear-gradient(to bottom, #e6e1d7, #e6e1d7bc, transparent)'
-            //             : 'transparent',
-            //         display: 'flex',
-            //         alignItems: 'center',
-            //         justifyContent: 'space-between',
-            //         zIndex: 1000,
-            //         transition: 'background 0.3s ease-in-out',
-            //         padding: '0 20px',
-            //         backdropFilter: 'blur(1px)',
-            //     }}
-            // >
-            //     {/* SearchDrawer */}
-            //     <SearchDrawer isScrolled={isScrolled} />
-
-            //     {/* Logo */}
-            //     <span
-            //         style={{
-            //             fontSize: 'clamp(14px, 4vw, 24px)',
-            //             fontWeight: 'bold',
-            //             color: isScrolled ? '#000' : '#fff',
-            //             textShadow: isScrolled ? 'none' : '0 1px 2px rgba(0, 0, 0, 0.3)',
-            //             whiteSpace: 'nowrap',
-            //             fontFamily: 'Lora, serif',
-            //             transition: 'color 0.3s ease',
-            //         }}
-            //     >
-            //         SHARLOCK
-            //     </span>
-
-            //     {/* Carrito */}
-            //     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            //         <Badge count={cartCount} size="small" onClick={() => navigate('/CarPage')}>
-            //             <ShoppingCartOutlined
-            //                 style={{
-            //                     fontSize: '18px',
-            //                     color: isScrolled ? '#000' : '#fff',
-            //                     cursor: 'pointer',
-            //                 }}
-            //             />
-            //         </Badge>
-            //     </div>
-            // </nav>
         )
     );
 };

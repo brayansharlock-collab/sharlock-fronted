@@ -10,7 +10,7 @@ import {
   ArrowLeftOutlined,
   HeartOutlined,
 } from "@ant-design/icons";
-import { Card, Button, Space, Grid } from "antd";
+import { Card, Button, Space, Grid, Tooltip } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Importar los componentes de cada sección
@@ -18,6 +18,7 @@ import Silk from "../components/animations/Silk";
 import CardList from "../components/profile/CardList";
 import UserInfo from "../components/profile/UserInfo";
 import AddressList from "../components/profile/AddressList";
+import OrderHistory from "../components/profile/OrderHistory";
 import FavoriteProducts from "../components/profile/FavoriteProducts";
 
 const { useBreakpoint } = Grid;
@@ -26,8 +27,7 @@ const menuItems = [
   { key: "user", label: "Tus datos", icon: <UserOutlined /> },
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
   { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
-  // { key: "orders", label: "Historial de pedidos", icon: <ShoppingCartOutlined /> },
-  { key: "tracking", label: "Seguimiento de productos", icon: <SearchOutlined /> },
+  { key: "tracking", label: "Historial", icon: <SearchOutlined /> },
 ];
 
 export default function ProfilePage() {
@@ -46,6 +46,8 @@ export default function ProfilePage() {
         return <CardList />;
       case "favorites":
         return <FavoriteProducts />;
+      case "tracking":
+        return <OrderHistory />;
       default:
         return null;
     }
@@ -87,7 +89,7 @@ export default function ProfilePage() {
         transition={{ duration: 0.4 }}
         style={{
           background: "white",
-          borderRadius: "2rem",
+          borderRadius: "20px",
           padding: isMobile ? "0.5rem 1rem" : "1rem 2rem",
           margin: "1rem 2rem",
           boxShadow: "0 8px 54px rgba(226, 222, 199, 0.93)",
@@ -99,17 +101,19 @@ export default function ProfilePage() {
           style={{ justifyContent: "center", width: "100%" }}
         >
           {menuItems.map((item) => (
-            <Button
-              key={item.key}
-              type={selectedKey === item.key ? "primary" : "default"}
-              shape={isMobile ? "circle" : "round"}
-              size={isMobile ? "large" : "large"}
-              icon={item.icon}
-              onClick={() => setSelectedKey(item.key)}
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-            >
-              {selectedKey === item.key ? !isMobile && item.label : null}
-            </Button>
+            <Tooltip title={item.label}>
+              <Button
+                key={item.key}
+                type={selectedKey === item.key ? "primary" : "default"}
+                shape={isMobile ? "circle" : "round"}
+                size={isMobile ? "large" : "large"}
+                icon={item.icon}
+                onClick={() => setSelectedKey(item.key)}
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
+                {selectedKey === item.key ? !isMobile && item.label : null}
+              </Button>
+            </Tooltip>
           ))}
           <Button
             type="primary"

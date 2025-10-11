@@ -77,7 +77,7 @@ const ProductDetail = () => {
     setLoading(true);
 
     try {
-      if (product?.is_favorite) {
+      if (isFavorite) {
         await productService.removeFromFavorites(product?.id);
         setIsFavorite(false);
       } else {
@@ -281,6 +281,28 @@ const ProductDetail = () => {
               onImageSelect={setSelectedImage}
               isMobile={true}
             />
+            <Tooltip title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
+              <Button
+                style={{
+                  position: "absolute",
+                  top: "0.5rem",
+                  right: "0.5rem",
+                  borderRadius: "0.8rem",
+                  backdropFilter: "blur(10px)",
+                  background: "rgba(255, 255, 255, 0.7)",
+                  border: "1px solid rgba(255, 255, 255, 0.5)",
+                  transition: "all 0.2s ease",
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite();
+                }}
+                icon={isFavorite ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
+                loading={loading}
+                type={isFavorite ? "primary" : "default"}
+              />
+            </Tooltip>
           </Col>
 
           {/* Imagen principal */}
