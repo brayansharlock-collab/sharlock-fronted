@@ -6,6 +6,7 @@ import { ProductCategoryShowcase } from "../components/home/ProductCategoryShowc
 import { motion, AnimatePresence } from "framer-motion";
 import { productService } from "../service/productService";
 import FooterHome from "../components/ui/footerHome";
+import { useNavigate } from "react-router-dom";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -41,6 +42,7 @@ const getResponsiveChunkSize = () => {
 };
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
     const [slides, setSlides] = useState<any[]>([]);
     const [categoriesAll, setCategoriesAll] = useState<any[]>([]);
     const [groupedCategories, setGroupedCategories] = useState<any[][]>([]);
@@ -83,6 +85,17 @@ const Home: React.FC = () => {
             }
         })();
     }, []);
+
+    const handleSelectCategory = (catName: number) => {
+        const payload = {
+            categories: [catName],
+            subcategories: [],
+            search: "",
+        };
+
+        localStorage.setItem("productFilters", JSON.stringify(payload));
+        navigate("/products");
+    };
 
     return (
         <>
@@ -211,6 +224,7 @@ const Home: React.FC = () => {
                                         {group.map((cat: Category,) => (
                                             <Col style={{ width: "200px", display: "flex", justifyContent: "center" }} key={cat.id}>
                                                 <Card
+                                                 onClick={() => handleSelectCategory(cat.id)} 
                                                     hoverable
                                                     style={{
                                                         width: "100%",

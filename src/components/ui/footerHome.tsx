@@ -44,6 +44,7 @@ export default function FooterHome() {
             letterSpacing: "1px",
             userSelect: "none",
           }}
+          className="footer-brand"
         >
           SHARLOCK
         </div>
@@ -58,6 +59,7 @@ export default function FooterHome() {
             gap: "0.2rem",
             fontFamily: "sans-serif",
           }}
+          className="footer-info"
         >
           <Text style={{ color: "#ccc" }}>Soporte: soporte@sharlock.com</Text>
           <Text style={{ color: "#ccc" }}>Pereira, Colombia</Text>
@@ -76,6 +78,33 @@ export default function FooterHome() {
           </Text>
         </div>
       </div>
+
+      {/* Estilos responsivos */}
+      <style>
+        {`
+      @media (max-width: 768px) {
+        .footer-brand {
+          border: none !important;
+          padding-right: 0 !important;
+          text-align: center !important;
+          width: 100%;
+        }
+
+        .footer-info {
+          text-align: center !important;
+          align-items: center !important;
+          width: 100%;
+        }
+
+        footer > div {
+          flex-direction: column !important;
+          align-items: center !important;
+          padding: 1.5rem 1rem !important;
+        }
+      }
+    `}
+      </style>
     </motion.footer>
+
   );
 }

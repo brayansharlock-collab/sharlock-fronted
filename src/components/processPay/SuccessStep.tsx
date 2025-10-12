@@ -6,7 +6,7 @@ import warningVideo from "../../assets/ilustrations/Warning_Status.gif";
 import { Link, useLocation } from "react-router-dom";
 import Silk from "../animations/Silk";
 import SharlockLogo from "../ui/SharlockLogo";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { billingService } from "../../service/billingService";
 
 export default function FinalStep() {
@@ -17,13 +17,13 @@ export default function FinalStep() {
 
   const [loading, setLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // null = cargando
-
+  const executedRef = useRef(false);
+  
   useEffect(() => {
-    let executed = false;
-
     const processPaymentResult = async () => {
-      if (executed) return;
-      executed = true;
+      // Evita ejecución doble
+      if (executedRef.current) return;
+      executedRef.current = true;
 
       let fix_id: number | null = null;
       if (isSuccess) fix_id = 2;
@@ -33,19 +33,19 @@ export default function FinalStep() {
       if (fix_id === null) return;
 
       if (isSuccess) {
-        const referrer = document.referrer;
-        const isFromMercadoPago = referrer.includes('mercadopago.com');
+        const referrer = document.referrer || "";
+        const isFromMercadoPago = referrer.includes("mercadopago.com");
 
         if (!isFromMercadoPago) {
-          console.warn('Acceso no autorizado: no viene de Mercado Pago');
+          console.warn("Acceso no autorizado: no viene de Mercado Pago");
           setIsAuthorized(false);
-          message.error('Acceso no permitido');
+          message.error("Acceso no permitido");
           return;
         }
         setIsAuthorized(true);
       }
 
-      const payment_id = new URLSearchParams(window.location.search).get('payment_id');
+      const payment_id = new URLSearchParams(window.location.search).get("payment_id");
       setLoading(true);
 
       try {
@@ -54,8 +54,8 @@ export default function FinalStep() {
           payment_id_transation: payment_id || undefined,
         });
       } catch (err: any) {
-        console.error('Error al actualizar la factura:', err);
-        message.error(err.message || 'Error al procesar el resultado del pago');
+        console.error("Error al actualizar la factura:", err);
+        message.error(err.message || "Error al procesar el resultado del pago");
       } finally {
         setLoading(false);
       }
