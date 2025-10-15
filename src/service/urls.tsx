@@ -2,7 +2,7 @@ export const API_URL_ALL = {
     BASE_URL: import.meta.env.VITE_REACT_APP_API_URL,
     USERS: `api/accounts/user/`,
     AUTH: `api/accounts/api-token-auth/`,
-    REFRESH: `es/api/v1/api-token-refresh/`,
+    REFRESH: `api/accounts/api-token-refresh/`,
     ADRESS: `api/accounts/addresses/`,
 
     ORDERS: `api/orders/`,
@@ -24,6 +24,7 @@ export const API_URL_ALL = {
     CART_CLEAR: "api/products/delete-shopping-cart/",
     COUPON: "api/products/coupon/",
     RECIPIENT: "api/products/receipt/",
+    GUIE: "api/products/get-distributor/",
 
     BANNER: "api/accounts/banner/",
 

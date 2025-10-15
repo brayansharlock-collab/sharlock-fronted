@@ -9,6 +9,7 @@ import {
   SearchOutlined,
   ArrowLeftOutlined,
   HeartOutlined,
+  SnippetsOutlined,
 } from "@ant-design/icons";
 import { Card, Button, Space, Grid, Tooltip } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +21,7 @@ import UserInfo from "../components/profile/UserInfo";
 import AddressList from "../components/profile/AddressList";
 import OrderHistory from "../components/profile/OrderHistory";
 import FavoriteProducts from "../components/profile/FavoriteProducts";
+import OrderHistoryAdmin from "../components/profile/OrderHistoryAdmin";
 
 const { useBreakpoint } = Grid;
 
@@ -28,6 +30,7 @@ const menuItems = [
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
   { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
   { key: "tracking", label: "Historial", icon: <SearchOutlined /> },
+  { key: "guie", label: "Administrar pedidos", icon: <SnippetsOutlined /> },
 ];
 
 export default function ProfilePage() {
@@ -48,6 +51,8 @@ export default function ProfilePage() {
         return <FavoriteProducts />;
       case "tracking":
         return <OrderHistory />;
+      case "guie":
+        return <OrderHistoryAdmin />;
       default:
         return null;
     }
