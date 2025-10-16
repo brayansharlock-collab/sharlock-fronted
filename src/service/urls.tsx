@@ -6,7 +6,7 @@ export const API_URL_ALL = {
     ADRESS: `api/accounts/addresses/`,
 
     ORDERS: `api/orders/`,
- 
+
     // Direcciones
     DEPARMENT: "/api/accounts/department/",
     APARMENT_TYPE: "/api/accounts/apartament-type/",
@@ -18,6 +18,7 @@ export const API_URL_ALL = {
     FILTER_NAMES: "/api/products/nombre-filtros/",
     FILTER_OPTIONS: "/api/products/opciones-filtros/",
     FAVORITES: "/api/products/favorites/",
+    COMMENTS: "/api/products/comments/",
 
     // Carrito de compras
     CART: "/api/products/shopping-cart/",

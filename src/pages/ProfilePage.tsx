@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import {
   UserOutlined,
   HomeOutlined,
-  SearchOutlined,
   ArrowLeftOutlined,
   HeartOutlined,
   SnippetsOutlined,
@@ -19,7 +18,6 @@ import Silk from "../components/animations/Silk";
 import CardList from "../components/profile/CardList";
 import UserInfo from "../components/profile/UserInfo";
 import AddressList from "../components/profile/AddressList";
-import OrderHistory from "../components/profile/OrderHistory";
 import FavoriteProducts from "../components/profile/FavoriteProducts";
 import OrderHistoryAdmin from "../components/profile/OrderHistoryAdmin";
 
@@ -29,7 +27,6 @@ const menuItems = [
   { key: "user", label: "Tus datos", icon: <UserOutlined /> },
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
   { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
-  { key: "tracking", label: "Historial", icon: <SearchOutlined /> },
   { key: "guie", label: "Administrar pedidos", icon: <SnippetsOutlined /> },
 ];
 
@@ -49,8 +46,6 @@ export default function ProfilePage() {
         return <CardList />;
       case "favorites":
         return <FavoriteProducts />;
-      case "tracking":
-        return <OrderHistory />;
       case "guie":
         return <OrderHistoryAdmin />;
       default:

@@ -46,7 +46,7 @@ export const productService = {
     if (body.favorite_product !== undefined) {
       body.favorite_product = String(body.favorite_product);
     }
-    const res = await api.post(`${API_URL_ALL.PRODUCTS}`, body );
+    const res = await api.post(`${API_URL_ALL.PRODUCTS}`, body);
     return normalizeResults(res.data) || [];
   },
 

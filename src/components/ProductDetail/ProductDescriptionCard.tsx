@@ -12,8 +12,9 @@ export const ProductDescriptionCard = ({ description, imageCover }: ProductDescr
   return (
     <motion.div
       style={{
-        marginTop: 32,
-        width: "100%",
+        // marginTop: 32,
+        margin: "40px auto",
+        width: "95%",
         height: 500,
         borderRadius: 16,
         overflow: "hidden",

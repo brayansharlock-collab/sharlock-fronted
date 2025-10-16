@@ -20,6 +20,8 @@ import { QuantitySelector } from "../components/ProductDetail/QuantitySelector"
 import { AddToCartButton } from "../components/ProductDetail/AddToCartButton"
 import { ViewCartButton } from "../components/ProductDetail/ViewCartButton"
 import { ProductDescriptionCard } from "../components/ProductDetail/ProductDescriptionCard"
+import { ProductComments } from "../components/ProductDetail/ProductComments"
+import SimilarProductsCarousel from "../components/ProductDetail/useSimilarProducts"
 
 interface StockDetail {
   id: number
@@ -392,6 +394,11 @@ const ProductDetail = () => {
               imageCover={product.image_cover}
             />
           )}
+
+          <SimilarProductsCarousel currentProduct={product} />
+
+
+          <ProductComments productId={product.id} />
         </Row>
       </motion.div>
     </>

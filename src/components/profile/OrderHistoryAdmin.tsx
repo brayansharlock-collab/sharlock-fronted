@@ -16,7 +16,7 @@ import {
 } from "antd";
 import { orderService } from "../../service/orderService";
 import { billingService } from "../../service/billingService";
-import { setEncryptedCookie } from "../../utils/encrypt";
+import { getDecryptedCookie, setEncryptedCookie } from "../../utils/encrypt";
 import { CopyOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
@@ -66,13 +66,14 @@ interface Distributor {
 export default function OrderHistoryAdmin() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
-  // const [processingPayment, setProcessingPayment] = useState<number | null>(null);
   const [activeKey, setActiveKey] = useState("2");
   const [openModal, setOpenModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [distributors, setDistributors] = useState<Distributor[]>([]);
   const [selectedDistributor, setSelectedDistributor] = useState<number | null>(null);
   const [form] = Form.useForm();
+
+  const user = getDecryptedCookie("data")
 
   const loadOrders = async (fix_id_filter?: string) => {
     setLoading(true);
@@ -108,31 +109,6 @@ export default function OrderHistoryAdmin() {
         return { color: "default", text: "Desconocido" };
     }
   };
-
-  // const handleProcessPayment = async (order: Order) => {
-  //   try {
-  //     const receiptId = order.id;
-  //     if (receiptId) {
-  //       setEncryptedCookie("receipt_id", receiptId, 1);
-  //     }
-  //     setProcessingPayment(receiptId);
-
-  //     const currentPath = window.location.pathname + window.location.search;
-  //     localStorage.setItem("lastVisitedPath", currentPath);
-
-  //     const payload = {
-  //       amount: order.total,
-  //       title: "Compra en Sharlock",
-  //     };
-
-  //     await mercadoPagoService.startPayMercadopago(payload);
-  //   } catch (err: any) {
-  //     console.error("Error al procesar pago:", err);
-  //     message.error("Error al iniciar el pago, inténtalo nuevamente.");
-  //   } finally {
-  //     setProcessingPayment(null);
-  //   }
-  // };
 
   const openGuideModal = async (order: Order) => {
     setSelectedOrder(order);
@@ -271,7 +247,7 @@ export default function OrderHistoryAdmin() {
                     </p>
                   )}
 
-                  {order.fix_id === 2 && (
+                  {(order.fix_id === 2 && user.role === "gia") && (
                     <Button
                       type="dashed"
                       style={{
@@ -285,7 +261,6 @@ export default function OrderHistoryAdmin() {
                     </Button>
                   )}
 
-                  {/* ✅ Sección responsive para la guía */}
                   {order.fix_id === 5 && order.Guide_detail?.length > 0 && (
                     <div
                       style={{
@@ -390,9 +365,6 @@ export default function OrderHistoryAdmin() {
         }}
       />
 
-
-
-      {/* ✅ Modal del formulario */}
       <Modal
         title="Generar guía de pedido"
         open={openModal}
