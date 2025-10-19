@@ -25,6 +25,11 @@ export const cartService = {
     return data
   },
 
+  getCountCar: async () => {
+    const { data } = await api.get(API_URL_ALL.COUNT_CAR)
+    return data
+  },
+
   updateCart: async (id: number, item: Partial<CartItem>) => {
     const formData = new FormData()
     Object.entries(item).forEach(([key, value]) => {

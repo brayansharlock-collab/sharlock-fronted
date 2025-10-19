@@ -18,8 +18,8 @@ const AnimatedNav: React.FC = () => {
     useEffect(() => {
         const fetchCartCount = async () => {
             try {
-                const data = await cartService.getCart();
-                setCartCount(data?.data?.count || 0);
+                const data = await cartService.getCountCar();
+                setCartCount(data?.data || 0);
             } catch (err) {
                 console.error("Error al obtener el carrito", err);
                 setCartCount(0);

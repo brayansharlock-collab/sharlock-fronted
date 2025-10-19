@@ -8,6 +8,9 @@ import { CloseOutlined, SearchOutlined, ShoppingCartOutlined, UserOutlined } fro
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cartService } from "../service/cartService";
+import { isNewProduct } from "../utils/dateUtils";
+import { calculateDiscountPercent, getProductImages } from "../utils/productUtils";
+import FooterHome from "../components/ui/footerHome";
 
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -25,9 +28,9 @@ export const ProductsPage: React.FC = () => {
     const [restored, setRestored] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
-    
+
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    
+
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [cartCount, setCartCount] = useState(2);
@@ -58,9 +61,8 @@ export const ProductsPage: React.FC = () => {
     useEffect(() => {
         const fetchCartCount = async () => {
             try {
-                const data = await cartService.getCart();
-                // 👇 El count viene directo de la API
-                setCartCount(data?.data?.count || 0);
+                const data = await cartService.getCountCar();
+                setCartCount(data?.data || 0);
             } catch (err) {
                 console.error("Error al obtener el carrito", err);
                 setCartCount(0);
@@ -383,7 +385,7 @@ export const ProductsPage: React.FC = () => {
                             style={{
                                 fontWeight: 700,
                                 fontSize: 20,
-                                marginLeft: 30,
+                                marginLeft: 35,
                                 color: "#000000ff",
                                 whiteSpace: "nowrap",
                                 fontFamily: "Lora, serif",
@@ -441,7 +443,7 @@ export const ProductsPage: React.FC = () => {
                             transition={{ duration: 0.35, ease: "easeOut" }}
                             style={{
                                 position: "absolute",
-                                top: "100%", // justo debajo del nav
+                                top: "100%",
                                 left: 0,
                                 right: 0,
                                 background: "white",
@@ -494,13 +496,16 @@ export const ProductsPage: React.FC = () => {
                 )}
 
                 {/* right products */}
-                <Content style={{ padding: 24, background: '#e5e1d7' }}>
+                <Content style={{
+                    background: '#e5e1d7', height: "calc(100vh - 65px)",
+                    overflowY: "auto",
+                }}>
                     {loading ? (
                         <div style={{ textAlign: "center", paddingTop: 60 }}>
                             <Spin size="large" />
                         </div>
                     ) : (
-                        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+                        <div style={{ margin: "0 auto", padding: 30 }}>
                             {filteredProducts.length === 0 ? (
                                 <div style={{ textAlign: "center", paddingTop: 40 }}>
                                     <Empty
@@ -510,13 +515,13 @@ export const ProductsPage: React.FC = () => {
                             ) : (
                                 <Row gutter={[20, 20]}>
                                     {filteredProducts.map((product: any) => {
-                                        const cleanPrice = parseFloat(String(product.final_price).replace(/\./g, "")) || 0;
-                                        const originalPrice =
-                                            product.final_price_discount && product.active_discount ? cleanPrice + cleanPrice * 0.2 : undefined;
-                                        const images =
-                                            product?.stock_detail?.[0]?.media
-                                                ?.filter((m: any) => m.is_image)
-                                                ?.map((m: any) => m.file) || [];
+                                        const discountPercent = calculateDiscountPercent(
+                                            product.active_discount,
+                                            product.final_price,
+                                            product.final_price_discount
+                                        )
+
+                                        const images = getProductImages(product)
                                         return (
                                             <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
                                                 <ProductCard
@@ -525,9 +530,10 @@ export const ProductsPage: React.FC = () => {
                                                     name={product.name}
                                                     image={product.image_cover}
                                                     price={product.final_price_discount}
-                                                    originalPrice={originalPrice}
-                                                    rating={product.rating || 4.5}
-                                                    isNew={false}
+                                                    originalPrice={product.active_discount > 0 ? product.final_price : null}
+                                                    rating={product.average_rating}
+                                                    discountPercent={discountPercent}
+                                                    isNew={isNewProduct(product.created_at)}
                                                     initialIsFavorite={product.is_favorite || false}
                                                 />
                                             </Col>
@@ -536,9 +542,15 @@ export const ProductsPage: React.FC = () => {
                                 </Row>
                             )}
                         </div>
+
                     )}
+                    
+                    <div style={{marginTop: 10, bottom: 0}}>
+                        <FooterHome />
+                    </div>
                 </Content>
             </Layout>
+
         </Layout>
     );
 };

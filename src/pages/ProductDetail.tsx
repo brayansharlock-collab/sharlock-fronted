@@ -44,6 +44,8 @@ interface Product {
   active_discount: number
   stock: number
   is_favorite: boolean
+  average_rating: number;
+  total_comments: number;
 }
 
 const ProductDetail = () => {
@@ -348,7 +350,6 @@ const ProductDetail = () => {
             </motion.div>
           </Col>
 
-          {/* Detalles */}
           <Col xs={24} sm={11}>
             <motion.div variants={itemVariants}>
               <ProductInfo
@@ -397,8 +398,7 @@ const ProductDetail = () => {
 
           <SimilarProductsCarousel currentProduct={product} />
 
-
-          <ProductComments productId={product.id} />
+          <ProductComments productId={product.id} totalComent={product.total_comments} totalRating={product.average_rating}  />
         </Row>
       </motion.div>
     </>

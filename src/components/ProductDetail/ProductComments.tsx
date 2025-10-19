@@ -21,6 +21,7 @@ import {
     MessageOutlined,
     UserOutlined,
     LockOutlined,
+    StarOutlined,
 } from "@ant-design/icons"
 import { tokenStorage } from "../../utils/token"
 
@@ -28,16 +29,26 @@ const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
 
 interface Comment {
-    id: number;
-    user_name?: string;
-    comment: string;
-    created_at: string;
-    replies: any[];
+    id: number
+    user_name?: string
+    comment: string
+    created_at: string
+    replies: any[]
+    rating: number
 }
 
-export const ProductComments = ({ productId }: { productId: number }) => {
+export const ProductComments = ({
+    productId,
+    totalComent,
+    totalRating,
+}: {
+    productId: number
+    totalComent: number
+    totalRating: number
+}) => {
     const [comments, setComments] = useState<Comment[]>([])
     const [newComment, setNewComment] = useState("")
+    const [newRating, setNewRating] = useState<number>(0)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [replyTarget, setReplyTarget] = useState<number | null>(null)
@@ -76,6 +87,7 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                 product: productId,
                 comment: replyComment,
                 comment_parent: parentId,
+                rating: newRating,
             })
             setReplyComment("")
             setReplyTarget(null)
@@ -92,12 +104,21 @@ export const ProductComments = ({ productId }: { productId: number }) => {
             setError("Escribe un comentario primero")
             return
         }
+        if (newRating === 0) {
+            setError("Selecciona una calificación antes de publicar.")
+            return
+        }
 
         try {
             setLoading(true)
             setError(null)
-            await commentService.create({ product: productId, comment: newComment })
+            await commentService.create({
+                product: productId,
+                comment: newComment,
+                rating: newRating,
+            })
             setNewComment("")
+            setNewRating(0)
             fetchComments()
         } catch {
             setError("Error al enviar comentario")
@@ -106,9 +127,32 @@ export const ProductComments = ({ productId }: { productId: number }) => {
         }
     }
 
-    useEffect(() => {
-        fetchComments()
-    }, [productId])
+    const StarRating = ({
+        rating,
+        setRating,
+        interactive = false,
+    }: {
+        rating: number
+        setRating?: (r: number) => void
+        interactive?: boolean
+    }) => (
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+            {[...Array(5)].map((_, i) => (
+                <StarOutlined
+                    key={i}
+                    onClick={() => interactive && setRating && setRating(i + 1)}
+                    style={{
+                        height: "1.1rem",
+                        width: "1.1rem",
+                        color: i < Math.floor(rating) ? "#facc15" : "#a3a3a3",
+                        fill: i < Math.floor(rating) ? "#facc15" : "none",
+                        cursor: interactive ? "pointer" : "default",
+                        transition: "color 0.2s ease",
+                    }}
+                />
+            ))}
+        </div>
+    )
 
     return (
         <motion.div
@@ -123,9 +167,10 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                 boxSizing: "border-box",
             }}
         >
-            {/* Header */}
-            <div style={{ marginBottom: "40px", }}>
+            {/* HEADER */}
+            <div style={{ marginBottom: "40px", textAlign: "center" }}>
                 <MessageOutlined style={{ fontSize: 46, color: "#aea08fff" }} />
+
                 <Title
                     level={2}
                     style={{
@@ -133,16 +178,24 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                         fontWeight: 700,
                         fontFamily: "'Playfair Display', serif",
                         color: "#1a1a1a",
+                        textAlign: "center"
                     }}
                 >
                     Opiniones y Experiencias
                 </Title>
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                    <StarRating rating={totalRating} />
+                </div>
+
                 <Text type="secondary" style={{ fontSize: "15px" }}>
                     Comparte tu punto de vista y ayuda a otros usuarios.
+                </Text><br />
+
+                <Text type="secondary" style={{ fontSize: "15px" }}>
+                    Total de comentarios:  {totalComent}
                 </Text>
             </div>
 
-            {/* Comentario nuevo */}
             <Card
                 style={{
                     padding: "24px",
@@ -150,18 +203,10 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                     background: "linear-gradient(160deg, #ffffff, #e6e1d7)",
                     border: "1px solid #e8e8e8",
                     boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
-                    // opacity: isLogged ? 1 : 0.5
                 }}
             >
                 {isLogged ? (
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: "14px",
-                            alignItems: "flex-start",
-                            flexWrap: "wrap",
-                        }}
-                    >
+                    <div style={{ display: "flex", gap: "14px", alignItems: "flex-start", flexWrap: "wrap" }}>
                         <Avatar
                             size={52}
                             icon={<UserOutlined />}
@@ -174,6 +219,7 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                             }}
                         />
                         <div style={{ flex: "1 1 300px", minWidth: "0" }}>
+                            <StarRating rating={newRating} setRating={setNewRating} interactive />
                             <TextArea
                                 placeholder="Escribe algo inspirador o deja tu opinión..."
                                 value={newComment}
@@ -215,7 +261,7 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                     type="primary"
                                     icon={<SendOutlined />}
                                     onClick={handleAddComment}
-                                    disabled={loading || !newComment.trim()}
+                                    disabled={loading || !newComment.trim() || newRating === 0}
                                     loading={loading}
                                     style={{
                                         borderRadius: "10px",
@@ -229,13 +275,7 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                         </div>
                     </div>
                 ) : (
-                    <div
-                        style={{
-                            textAlign: "center",
-                            padding: "40px 0",
-                            color: "#888",
-                        }}
-                    >
+                    <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
                         <LockOutlined style={{ fontSize: 40, color: "#c5b8a0" }} />
                         <Paragraph style={{ marginTop: 10, fontSize: 16 }}>
                             Debes iniciar sesión para escribir un comentario.
@@ -247,26 +287,13 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                 )}
             </Card>
 
-            {/* Divider */}
-            <Divider
-                plain
-                style={{
-                    margin: "40px 0",
-                    color: "#888",
-                }}
-            >
+            {/* LISTA DE COMENTARIOS */}
+            <Divider plain style={{ margin: "40px 0", color: "#888" }}>
                 <CommentOutlined style={{ marginRight: 6 }} />
                 Comentarios recientes
             </Divider>
 
-            {/* Lista de comentarios */}
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "18px",
-                }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                 <AnimatePresence mode="popLayout">
                     {comments.length === 0 ? (
                         <motion.div
@@ -324,9 +351,11 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                         <Avatar
                                             size={48}
                                             style={{
-                                                backgroundColor: "#1677ff25",
-                                                color: "#1677ff",
+                                                backgroundColor: "#5c503a32",
+                                                color: "#ab9c7dff",
                                                 fontWeight: 600,
+                                                fontSize: "20px",
+                                                flexShrink: 0,
                                             }}
                                         >
                                             {item.user_name?.[0]?.toUpperCase() || "U"}
@@ -355,6 +384,8 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                 </Text>
                                             </div>
 
+                                            <StarRating rating={item.rating} />
+
                                             <Paragraph
                                                 style={{
                                                     margin: "6px 0 12px",
@@ -367,7 +398,13 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                             </Paragraph>
 
                                             <Space>
-                                                <Tooltip title={isLogged ? "Responder a este comentario" : "Inicia sesión para poder reponder este comentario"}>
+                                                <Tooltip
+                                                    title={
+                                                        isLogged
+                                                            ? "Responder a este comentario"
+                                                            : "Inicia sesión para poder responder"
+                                                    }
+                                                >
                                                     <Button
                                                         disabled={!isLogged}
                                                         type="link"
@@ -399,6 +436,32 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                         border: "1px solid #e6ebf5",
                                                     }}
                                                 >
+                                                    {/* ⭐ Selector de estrellas para la respuesta */}
+                                                    <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <StarOutlined
+                                                                key={i}
+                                                                onClick={() => setNewRating(i + 1)}
+                                                                style={{
+                                                                    cursor: "pointer",
+                                                                    fontSize: "18px",
+                                                                    marginRight: "4px",
+                                                                    color: i < newRating ? "#facc15" : "#d1d5db",
+                                                                    transition: "color 0.2s",
+                                                                }}
+                                                            />
+                                                        ))}
+                                                        <span
+                                                            style={{
+                                                                fontSize: "13px",
+                                                                color: "#6b7280",
+                                                                marginLeft: "6px",
+                                                            }}
+                                                        >
+                                                            {newRating > 0 ? `${newRating} / 5` : "Selecciona tu calificación"}
+                                                        </span>
+                                                    </div>
+
                                                     <TextArea
                                                         rows={3}
                                                         value={replyComment}
@@ -411,6 +474,7 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                             border: "1px solid #d9d9d9",
                                                         }}
                                                     />
+
                                                     <div
                                                         style={{
                                                             display: "flex",
@@ -420,7 +484,11 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                         }}
                                                     >
                                                         <Button
-                                                            onClick={() => setReplyTarget(null)}
+                                                            onClick={() => {
+                                                                setReplyTarget(null)
+                                                                setReplyComment("")
+                                                                setNewRating(0)
+                                                            }}
                                                             style={{
                                                                 borderRadius: "8px",
                                                                 fontWeight: 500,
@@ -444,6 +512,8 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                 </motion.div>
                                             )}
 
+
+                                            {/* Mostrar respuestas */}
                                             {/* Mostrar respuestas */}
                                             {item.replies?.length > 0 && (
                                                 <motion.div
@@ -470,9 +540,40 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                                 border: "1px solid #f0f0f0",
                                                             }}
                                                         >
-                                                            <Text strong style={{ fontSize: "14px", color: "#8e7d69ff" }}>
-                                                                {reply.user_name || "Usuario"}
-                                                            </Text>
+                                                            <div
+                                                                style={{
+                                                                    display: "flex",
+                                                                    justifyContent: "space-between",
+                                                                    alignItems: "center",
+                                                                    flexWrap: "wrap",
+                                                                    marginBottom: "4px",
+                                                                }}
+                                                            >
+                                                                <Text strong style={{ fontSize: "14px", color: "#8e7d69ff" }}>
+                                                                    {reply.user_name || "Usuario"}
+                                                                </Text>
+                                                                <Text type="secondary" style={{ fontSize: "12px" }}>
+                                                                    {new Date(reply.created_at).toLocaleDateString("es-ES", {
+                                                                        year: "numeric",
+                                                                        month: "short",
+                                                                        day: "numeric",
+                                                                        hour: "2-digit",
+                                                                        minute: "2-digit",
+                                                                    })}
+                                                                </Text>
+                                                            </div>
+
+                                                            {/* ⭐ Rating individual de la respuesta */}
+                                                            {reply.rating ? (
+                                                                <div style={{ marginBottom: "4px" }}>
+                                                                    <StarRating rating={reply.rating} />
+                                                                </div>
+                                                            ) : (
+                                                                <Text type="secondary" style={{ fontSize: "12px" }}>
+                                                                    Sin calificación
+                                                                </Text>
+                                                            )}
+
                                                             <Paragraph
                                                                 style={{
                                                                     margin: "4px 0 0",
@@ -486,6 +587,7 @@ export const ProductComments = ({ productId }: { productId: number }) => {
                                                     ))}
                                                 </motion.div>
                                             )}
+
                                         </div>
                                     </div>
                                 </Card>

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Row, Col, Spin, Empty } from "antd";
 import { ProductCard } from "../ui/ProductCard";
 import { productService } from "../../service/productService";
+import { calculateDiscountPercent, getProductImages } from "../../utils/productUtils";
+import { isNewProduct } from "../../utils/dateUtils";
 
 export default function FavoriteProducts() {
   const [products, setProducts] = useState<any[]>([]);
@@ -35,21 +37,31 @@ export default function FavoriteProducts() {
 
   return (
     <Row gutter={[16, 16]}>
-      {products.map((p) => (
-        <Col key={p.id} xs={24} sm={12} md={8} lg={6}>
-          <ProductCard
-            id={p.id}
-            name={p.name}
-            image={p.image_cover}
-            images={p.images}
-            price={p.final_price_discount}
-            rating={p.rating}
-            originalPrice={p.final_price}
-            isNew={p.isNew}
-            initialIsFavorite={true}
-          />
-        </Col>
-      ))}
+      {products.map((p) => {
+        const discountPercent = calculateDiscountPercent(
+          p.active_discount,
+          p.final_price,
+          p.final_price_discount
+        )
+
+        const images = getProductImages(p)
+        return (
+          <Col key={p.id} xs={24} sm={12} md={8} lg={6}>
+            <ProductCard
+              images={images}
+              id={p.id}
+              name={p.name}
+              image={p.image_cover}
+              price={p.final_price_discount}
+              originalPrice={p.active_discount > 0 ? p.final_price : null}
+              rating={p.average_rating}
+              discountPercent={discountPercent}
+              isNew={isNewProduct(p.created_at)}
+              initialIsFavorite={p.is_favorite || false}
+            />
+          </Col>
+        );
+      })}
     </Row>
   );
 }

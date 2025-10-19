@@ -159,6 +159,10 @@ export default function FooterHome() {
               flex-direction: column !important;
               align-items: center !important;
             }
+            footer > div > div  {
+              flex-direction: column !important;
+              align-items: center !important;
+            }
             h2 {
               text-align: center;
             }

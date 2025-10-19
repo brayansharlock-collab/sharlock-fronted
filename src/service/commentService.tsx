@@ -9,7 +9,7 @@ export const commentService = {
         return response.data;
     },
 
-    create: async (data: { product: number; comment: string; comment_parent?: number }) => {
+    create: async (data: { product: number; comment: string; comment_parent?: number; rating: number, }) => {
         const response = await api.post(baseUrl, data);
         return response.data;
     },

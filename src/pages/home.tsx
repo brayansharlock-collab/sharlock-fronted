@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Carousel, Row, Col, Card } from "antd";
 import AnimatedNav from "../components/ui/nav";
 import { bannersService } from "../service/banners";
-import { ProductCategoryShowcase } from "../components/home/ProductCategoryShowcase";
 import { motion, AnimatePresence } from "framer-motion";
 import { productService } from "../service/productService";
 import FooterHome from "../components/ui/footerHome";
 import { useNavigate } from "react-router-dom";
+import { FeaturedProducts } from "../components/home/featureproducts";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -160,7 +160,6 @@ const Home: React.FC = () => {
                 )}
             </AnimatePresence>
 
-
             {/* 🔹 Contenido principal */}
             {!isLoading && (
                 <div style={{ position: "relative" }}>
@@ -224,7 +223,7 @@ const Home: React.FC = () => {
                                         {group.map((cat: Category,) => (
                                             <Col style={{ width: "200px", display: "flex", justifyContent: "center" }} key={cat.id}>
                                                 <Card
-                                                 onClick={() => handleSelectCategory(cat.id)} 
+                                                    onClick={() => handleSelectCategory(cat.id)}
                                                     hoverable
                                                     style={{
                                                         width: "100%",
@@ -259,15 +258,7 @@ const Home: React.FC = () => {
                 </div>
             )}
 
-            {/* Productos por categoría */}
-            {!isLoading &&
-                categoriesAll.map((cat, idx) => (
-                    <ProductCategoryShowcase
-                        key={idx}
-                        categoryId={idx + 1}
-                        categoryName={cat.name}
-                    />
-                ))}
+            {!isLoading && <FeaturedProducts />}
 
             <FooterHome />
         </>

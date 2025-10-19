@@ -22,10 +22,12 @@ export const API_URL_ALL = {
 
     // Carrito de compras
     CART: "/api/products/shopping-cart/",
+    COUNT_CAR: "/api/products/get-count-shopping-cart/",
     CART_CLEAR: "api/products/delete-shopping-cart/",
     COUPON: "api/products/coupon/",
     RECIPIENT: "api/products/receipt/",
     GUIE: "api/products/get-distributor/",
+
 
     BANNER: "api/accounts/banner/",
 

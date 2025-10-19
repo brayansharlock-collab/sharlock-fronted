@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, message, Tooltip } from "antd";
+import { Button, message, Tag, Tooltip } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeartFilled, HeartOutlined, StarOutlined } from "@ant-design/icons";
 import BadgeNuevo from "./Badge";
@@ -16,6 +16,7 @@ interface ProductCardProps {
   rating?: number;
   originalPrice?: number;
   isNew?: boolean;
+  discountPercent: number;
   initialIsFavorite?: boolean;
   updateQuantity?: (id: number, newQty: number) => void;
   removeItem?: (id: number) => void;
@@ -27,9 +28,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   image,
   images = [],
   price,
-  rating = 0, 
+  rating = 0,
   originalPrice,
   isNew,
+  discountPercent,
   initialIsFavorite = false,
 }) => {
   const [hover, setHover] = useState(false);
@@ -175,9 +177,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   }}
                 />
               ))}
-              <span style={{ fontSize: "0.75rem", color: "#6b7280", marginLeft: "0.25rem" }}>
-                ({rating})
-              </span>
             </div>
             <div
               style={{
@@ -203,6 +202,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     ${originalPrice}
                   </span>
                 )}
+
+                {discountPercent > 0 && (
+                  <Tag color="red" style={{ marginLeft: "0.5rem", }}>-{discountPercent}%</Tag>
+                )}
+
               </div>
             </div>
           </div>

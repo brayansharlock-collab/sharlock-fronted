@@ -3,6 +3,8 @@ import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import { productService } from "../../service/productService";
 import { ProductCard } from "../ui/ProductCard";
+import { isNewProduct } from "../../utils/dateUtils";
+import { calculateDiscountPercent, getProductImages } from "../../utils/productUtils";
 
 interface SimilarProductsCarouselProps {
     currentProduct: any;
@@ -15,6 +17,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
     const [loading, setLoading] = useState(false);
 
     const itemsPerPage = window.innerWidth < 768 ? 1 : 5;
+
 
     const buildBody = () => {
         const body: any = {};
@@ -35,7 +38,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
         try {
             setLoading(true);
             const body = buildBody();
-            
+
             const res = await productService.list(body);
 
             const filtered = res.filter((p: any) => p.id !== currentProduct.id);
@@ -83,7 +86,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                 position: "relative",
                 background: "linear-gradient(160deg, #ffffff, #e6e1d7)",
                 border: "1px solid #e8e8e8",
-                borderRadius:18,
+                borderRadius: 18,
             }}
         >
             {/* Título con efecto */}
@@ -160,18 +163,13 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                         }}
                     >
                         {products.map((product: any) => {
-                            const cleanPrice =
-                                parseFloat(String(product.final_price).replace(/\./g, "")) || 0;
-                            const originalPrice =
-                                product.final_price_discount && product.active_discount
-                                    ? cleanPrice + cleanPrice * 0.2
-                                    : undefined;
+                            const discountPercent = calculateDiscountPercent(
+                                product.active_discount,
+                                product.final_price,
+                                product.final_price_discount
+                            )
 
-                            const images =
-                                product?.stock_detail?.[0]?.media
-                                    ?.filter((m: any) => m.is_image)
-                                    ?.map((m: any) => m.file) || [];
-
+                            const images = getProductImages(product)
                             return (
                                 <motion.div
                                     key={product.id}
@@ -185,14 +183,15 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                                     }}
                                 >
                                     <ProductCard
-                                        id={product.id}
                                         images={images}
+                                        id={product.id}
                                         name={product.name}
                                         image={product.image_cover}
                                         price={product.final_price_discount}
-                                        originalPrice={originalPrice}
-                                        // rating={product.rating || 4.5}
-                                        isNew={false}
+                                        originalPrice={product.active_discount > 0 ? product.final_price : null}
+                                        rating={product.average_rating}
+                                        discountPercent={discountPercent}
+                                        isNew={isNewProduct(product.created_at)}
                                         initialIsFavorite={product.is_favorite || false}
                                     />
                                 </motion.div>

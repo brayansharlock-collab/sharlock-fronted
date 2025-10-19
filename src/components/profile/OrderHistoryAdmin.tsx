@@ -104,7 +104,7 @@ export default function OrderHistoryAdmin() {
       case 4:
         return { color: "red", text: "Fallido" };
       case 5:
-        return { color: "cyan", text: "En envío" };
+        return { color: "cyan", text: "Enviado" };
       default:
         return { color: "default", text: "Desconocido" };
     }
@@ -152,7 +152,7 @@ export default function OrderHistoryAdmin() {
 
   const items: TabsProps["items"] = [
     { key: "2", label: "Aprobado" },
-    { key: "5", label: "En envío" },
+    { key: "5", label: "Enviado" },
     { key: "3", label: "Pendientes por pagar" },
     { key: "4", label: "Fallidos" },
     { key: "1", label: "En proceso" },
