@@ -52,8 +52,8 @@ export default function FavoriteProducts() {
               id={p.id}
               name={p.name}
               image={p.image_cover}
-              price={p.final_price_discount}
-              originalPrice={p.active_discount > 0 ? p.final_price : null}
+              price={p.final_price}
+              originalPrice={p.active_discount > 0 ? p.final_price_discount : null}
               rating={p.average_rating}
               discountPercent={discountPercent}
               isNew={isNewProduct(p.created_at)}

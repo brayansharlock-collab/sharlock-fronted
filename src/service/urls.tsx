@@ -19,6 +19,7 @@ export const API_URL_ALL = {
     FILTER_OPTIONS: "/api/products/opciones-filtros/",
     FAVORITES: "/api/products/favorites/",
     COMMENTS: "/api/products/comments/",
+    PRODUCTS_DISCOUNT: "/api/products/get-products-discount/",
 
     // Carrito de compras
     CART: "/api/products/shopping-cart/",
@@ -28,8 +29,6 @@ export const API_URL_ALL = {
     RECIPIENT: "api/products/receipt/",
     GUIE: "api/products/get-distributor/",
 
-
     BANNER: "api/accounts/banner/",
-
     GOOGLE: "api/accounts/api-token-auth-google/",
 }

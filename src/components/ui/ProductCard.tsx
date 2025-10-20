@@ -63,15 +63,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <Link
       to={`/producto/${name}/${id}`}
-      style={{ textDecoration: "none", color: "inherit", display: "block" }}
+      style={{ textDecoration: "none", color: "inherit", display: "block",  }}
     >
       <div
         key={id}
         style={{
-          transition: "box-shadow 0.2s ease",
-          borderRadius: "1.2rem",
+          borderRadius: "1.3rem",
           backgroundColor: "white",
           cursor: "pointer",
+          border: "solid 2px #c5c5c53d"
         }}
       >
         <div style={{ padding: 0 }}>

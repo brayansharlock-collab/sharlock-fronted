@@ -496,59 +496,66 @@ export const ProductsPage: React.FC = () => {
                 )}
 
                 {/* right products */}
-                <Content style={{
-                    background: '#e5e1d7', height: "calc(100vh - 65px)",
-                    overflowY: "auto",
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: '9vh',
+                    background: '#ffffff',
+                    width: "100%"
                 }}>
-                    {loading ? (
-                        <div style={{ textAlign: "center", paddingTop: 60 }}>
-                            <Spin size="large" />
-                        </div>
-                    ) : (
-                        <div style={{ margin: "0 auto", padding: 30 }}>
-                            {filteredProducts.length === 0 ? (
-                                <div style={{ textAlign: "center", paddingTop: 40 }}>
-                                    <Empty
-                                        description="No se encontraron productos"
-                                    />
-                                </div>
-                            ) : (
-                                <Row gutter={[20, 20]}>
-                                    {filteredProducts.map((product: any) => {
-                                        const discountPercent = calculateDiscountPercent(
-                                            product.active_discount,
-                                            product.final_price,
-                                            product.final_price_discount
-                                        )
+                    <Content style={{
+                        flex: 1,
+                        overflowY: "auto",
+                        padding: 0, 
+                    }}>
+                        {loading ? (
+                            <div style={{ textAlign: "center", paddingTop: 60 }}>
+                                <Spin size="large" />
+                            </div>
+                        ) : (
+                            <div style={{ margin: "0 auto", padding: 30 }}>
+                                {filteredProducts.length === 0 ? (
+                                    <div style={{ textAlign: "center", paddingTop: 40 }}>
+                                        <Empty description="No se encontraron productos" />
+                                    </div>
+                                ) : (
+                                    <Row gutter={[20, 20]}>
+                                        {filteredProducts.map((product: any) => {
+                                            const discountPercent = calculateDiscountPercent(
+                                                product.active_discount,
+                                                product.final_price,
+                                                product.final_price_discount
+                                            )
 
-                                        const images = getProductImages(product)
-                                        return (
-                                            <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
-                                                <ProductCard
-                                                    images={images}
-                                                    id={product.id}
-                                                    name={product.name}
-                                                    image={product.image_cover}
-                                                    price={product.final_price_discount}
-                                                    originalPrice={product.active_discount > 0 ? product.final_price : null}
-                                                    rating={product.average_rating}
-                                                    discountPercent={discountPercent}
-                                                    isNew={isNewProduct(product.created_at)}
-                                                    initialIsFavorite={product.is_favorite || false}
-                                                />
-                                            </Col>
-                                        );
-                                    })}
-                                </Row>
-                            )}
-                        </div>
+                                            const images = getProductImages(product)
+                                            return (
+                                                <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                                                    <ProductCard
+                                                        images={images}
+                                                        id={product.id}
+                                                        name={product.name}
+                                                        image={product.image_cover}
+                                                        price={product.final_price_discount}
+                                                        originalPrice={product.active_discount > 0 ? product.final_price : null}
+                                                        rating={product.average_rating}
+                                                        discountPercent={discountPercent}
+                                                        isNew={isNewProduct(product.created_at)}
+                                                        initialIsFavorite={product.is_favorite || false}
+                                                    />
+                                                </Col>
+                                            );
+                                        })}
+                                    </Row>
+                                )}
+                            </div>
+                        )}
+                    </Content>
 
-                    )}
-                    
-                    <div style={{marginTop: 10, bottom: 0}}>
+                    {/* Footer fijado abajo */}
+                    <div style={{ marginTop: 10 }}>
                         <FooterHome />
                     </div>
-                </Content>
+                </div>
             </Layout>
 
         </Layout>

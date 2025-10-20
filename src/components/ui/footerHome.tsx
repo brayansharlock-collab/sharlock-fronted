@@ -24,6 +24,8 @@ export default function FooterHome() {
         fontFamily: "'Cinzel', serif",
         zIndex: 50,
         paddingTop: "2rem",
+        borderStartStartRadius: 30,
+        borderStartEndRadius: 30
       }}
     >
       <div

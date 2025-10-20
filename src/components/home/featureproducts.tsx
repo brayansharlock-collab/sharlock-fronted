@@ -1,83 +1,90 @@
 "use client"
 
-import type React from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
+import { productService } from "../../service/productService"
 
-interface Product {
-    id: number
-    name: string
-    category: string
-    price: string
-    image: string
+interface DiscountProduct {
+    id: number;
+    name: string;
+    slug: string;
+    image_cover: string;
+    active_discount: number;
+    final_price: string;
+    final_price_discount: string;
+    average_rating: number;
 }
-
-const featuredProducts: Product[] = [
-    {
-        id: 1,
-        name: "Gorra Retro",
-        category: "Accesorios",
-        price: "$45.000",
-        image: "/elegant-white-baseball-cap-on-beige-background.jpg",
-    },
-    {
-        id: 2,
-        name: "Camisa Lino",
-        category: "Camisas",
-        price: "$89.000",
-        image: "/elegant-beige-linen-shirt-on-neutral-background.jpg",
-    },
-    {
-        id: 3,
-        name: "Chaqueta Denim",
-        category: "Chaquetas",
-        price: "$125.000",
-        image: "/premium-denim-jacket-on-beige-background.jpg",
-    },
-    {
-        id: 4,
-        name: "Pantalón Cargo",
-        category: "Pantalones",
-        price: "$78.000",
-        image: "/beige-cargo-pants-on-neutral-background.jpg",
-    },
-    {
-        id: 5,
-        name: "Suéter Lana",
-        category: "Suéteres",
-        price: "$95.000",
-        image: "/cream-wool-sweater-on-beige-background.jpg",
-    },
-    {
-        id: 6,
-        name: "Suéter Lana",
-        category: "Suéteres",
-        price: "$95.000",
-        image: "/cream-wool-sweater-on-beige-background.jpg",
-    },
-]
 
 export const FeaturedProducts: React.FC = () => {
     const navigate = useNavigate()
+    const [products, setProducts] = useState<DiscountProduct[]>([])
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
+    const [loading, setLoading] = useState(false)
+    const loadingRef = useRef(false)
+    const itemsPerPage = 6
 
-    const handleProductClick = (productId: number) => {
-        navigate(`/product/${productId}`)
+    const fetchDiscountedProducts = useCallback(async (append = false) => {
+        if (loadingRef.current) return
+
+        loadingRef.current = true
+        setLoading(true)
+
+        try {
+            const res = await productService.getDiscountProducts(page, itemsPerPage)
+            const results = Array.isArray(res?.data) ? res.data : []
+            const total = res?.total ?? 0
+
+            if (append) {
+                setProducts(prev => [...prev, ...results])
+            } else {
+                setProducts(results)
+            }
+
+            const totalCargados = (append ? products.length : 0) + results.length
+            setHasMore(totalCargados < total)
+
+            if (totalCargados < total) {
+                setPage(prev => prev + 1)
+            }
+
+        } catch (err) {
+            console.error("Error al cargar productos:", err)
+        } finally {
+            loadingRef.current = false
+            setLoading(false)
+        }
+    }, [page, products])
+
+    useEffect(() => {
+        fetchDiscountedProducts(false)
+    }, [])
+
+    const handleProductClick = (product: DiscountProduct) => {
+        navigate(`/producto/${product.slug}/${product.id}`)
     }
 
-    const gridStyles = [
-        { gridColumn: "span 7" },
-        { gridColumn: "span 5" },
-        { gridColumn: "span 6" },
-        { gridColumn: "span 6" },
-    ]
+    const handleSeeAll = async () => {
+        if (hasMore) {
+            await fetchDiscountedProducts(true)
+        } else {
+            navigate("/products")
+        }
+    }
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!hasMore || loadingRef.current) return
+            const bottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 400
+            if (bottom) fetchDiscountedProducts(true)
+        }
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [hasMore, fetchDiscountedProducts])
 
     return (
-        <section
-            style={{
-                padding: "10px 40px 70px 40px",
-                position: "relative",
-            }}
-        >
+        <section style={{ padding: "10px 0px 70px 0px", position: "relative" }}>
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -112,21 +119,34 @@ export const FeaturedProducts: React.FC = () => {
                         fontWeight: "300",
                     }}
                 >
-                    Descubre piezas únicas que definen tu estilo. Calidad y diseño en cada prenda.
+                    Descubre piezas únicas con descuentos especiales. Estilo y diseño a un
+                    precio inigualable.
                 </p>
             </motion.div>
 
             {/* Mosaico dinámico */}
             <div
                 style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gridAutoRows: "auto",
+                    width: "100%",
                     maxWidth: "1400px",
                     margin: "0 auto",
-                    display: "grid",
-                    gridTemplateColumns: "repeat(12, 1fr)",
-                    gap: "24px",
+                    gap: "8px",
                 }}
             >
-                {featuredProducts.map((product, index) => (
+                <style>
+                    {`
+                    @media (max-width: 768px) {
+                      div[style*="gridTemplateColumns: repeat(2"] {
+                        grid-template-columns: 1fr !important;
+                      }
+                    }
+                  `}
+                </style>
+
+                {products.map((product, index) => (
                     <motion.div
                         key={product.id}
                         initial={{ opacity: 0, y: 40 }}
@@ -134,25 +154,25 @@ export const FeaturedProducts: React.FC = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: index * 0.1 }}
                         style={{
-                            ...gridStyles[index % gridStyles.length],
                             position: "relative",
                             cursor: "pointer",
                             overflow: "hidden",
                             backgroundColor: "#fff",
-                            borderRadius: "20px", // más redondeado
-                            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                            borderRadius: "0px",
+                            gridColumn: index % 5 === 0 ? "span 2" : "span 1",
                         }}
-                        onClick={() => handleProductClick(product.id)}
+                        onClick={() => handleProductClick(product)}
                     >
                         <div
                             style={{
                                 position: "relative",
-                                paddingBottom: "120%",
-                                overflow: "hidden",
+                                width: "100%",
+                                height: "100%",
+                                aspectRatio: index % 5 === 0 ? "16/7" : "1/1",
                             }}
                         >
                             <motion.img
-                                src={product.image}
+                                src={product.image_cover}
                                 alt={product.name}
                                 whileHover={{ scale: 1.06 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
@@ -163,47 +183,86 @@ export const FeaturedProducts: React.FC = () => {
                                     width: "100%",
                                     height: "100%",
                                     objectFit: "cover",
+                                    transition: "transform 0.4s ease",
                                 }}
                             />
-                        </div>
-                        <div
-                            style={{
-                                padding: "28px",
-                                backgroundColor: "#fff",
-                            }}
-                        >
-                            <p
+
+                            {product.active_discount > 0 && (
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: "12px",
+                                        right: "12px",
+                                        backgroundColor: "#e63946",
+                                        color: "#fff",
+                                        fontSize: "14px",
+                                        fontWeight: "600",
+                                        padding: "6px 10px",
+                                        borderRadius: "12px",
+                                    }}
+                                >
+                                    -{product.active_discount}%
+                                </div>
+                            )}
+
+                            <div
                                 style={{
-                                    fontSize: "11px",
-                                    letterSpacing: "2px",
-                                    textTransform: "uppercase",
-                                    color: "#999",
-                                    marginBottom: "8px",
-                                    fontWeight: "500",
+                                    position: "absolute",
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    padding: "20px",
+                                    background:
+                                        "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 100%)",
+                                    color: "#fff",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "flex-end",
+                                    height: "100%",
                                 }}
                             >
-                                {product.category}
-                            </p>
-                            <h3
-                                style={{
-                                    fontFamily: "Lora, serif",
-                                    fontSize: "22px",
-                                    fontWeight: "400",
-                                    color: "#2a2a2a",
-                                    marginBottom: "10px",
-                                }}
-                            >
-                                {product.name}
-                            </h3>
-                            <p
-                                style={{
-                                    fontSize: "18px",
-                                    color: "#2a2a2a",
-                                    fontWeight: "500",
-                                }}
-                            >
-                                {product.price}
-                            </p>
+                                <h3
+                                    style={{
+                                        fontFamily: "Lora, serif",
+                                        fontSize: "18px",
+                                        fontWeight: "500",
+                                        marginBottom: "6px",
+                                    }}
+                                >
+                                    {product.name}
+                                </h3>
+
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                                        ${product.final_price}
+                                    </span>
+                                    {product.active_discount > 0 && (
+                                        <span
+                                            style={{
+                                                fontSize: "14px",
+                                                textDecoration: "line-through",
+                                                opacity: 0.8,
+                                            }}
+                                        >
+                                            ${product.final_price_discount}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div style={{ marginTop: "4px" }}>
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <span
+                                            key={i}
+                                            style={{
+                                                color: i < product.average_rating ? "#FFD700" : "#aaa",
+                                                fontSize: "16px",
+                                            }}
+                                        >
+                                            ★
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 ))}
@@ -215,10 +274,7 @@ export const FeaturedProducts: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                style={{
-                    textAlign: "center",
-                    marginTop: "80px",
-                }}
+                style={{ textAlign: "center", marginTop: "80px" }}
             >
                 <button
                     style={{
@@ -235,17 +291,14 @@ export const FeaturedProducts: React.FC = () => {
                         transition: "all 0.3s ease",
                         fontWeight: "500",
                     }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#1a1a1a"
-                        e.currentTarget.style.transform = "translateY(-2px)"
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#2a2a2a"
-                        e.currentTarget.style.transform = "translateY(0)"
-                    }}
-                    onClick={() => navigate("/products")}
+                    onClick={handleSeeAll}
+                    disabled={loading}
                 >
-                    Ver Toda la Colección
+                    {loading
+                        ? "Cargando..."
+                        : hasMore
+                            ? "Ver Más Productos"
+                            : "Ver Página de Productos"}
                 </button>
             </motion.div>
         </section>

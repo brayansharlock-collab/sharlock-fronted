@@ -3,12 +3,6 @@ import api from "./api";
 import { API_URL_ALL } from "./urls";
 
 const normalizeResults = (resData: any) => {
-  // casos cubiertos:
-  // - res.data.data.results (formato con wrapper)
-  // - res.data.results
-  // - res.data (array)
-  // - res.data.data (objeto)
-  // - res.data (objeto) -> devolver [objeto]
   if (!resData) return [];
 
   // si trae shape { data: { results: [...] } }
@@ -42,12 +36,29 @@ const normalizeResults = (resData: any) => {
 };
 
 export const productService = {
-  list: async (body: any = {}) => {
-    if (body.favorite_product !== undefined) {
-      body.favorite_product = String(body.favorite_product);
+  list: async (filters: any = {}, page: number = 1, pageSize: number = 1) => {
+    if (filters.favorite_product !== undefined) {
+      filters.favorite_product = String(filters.favorite_product);
     }
-    const res = await api.post(`${API_URL_ALL.PRODUCTS}`, body);
+
+    const queryParams = new URLSearchParams({
+      page: String(page),
+      page_size: String(pageSize),
+    }).toString();
+
+    const res = await api.post(`${API_URL_ALL.PRODUCTS}?${queryParams}`, filters);
     return normalizeResults(res.data) || [];
+  },
+
+  getDiscountProducts: async (page: number = 1, pageSize: number = 6) => {
+    try {
+      const query = `?page=${page}&page_size=${pageSize}`;
+      const res = await api.get(`${API_URL_ALL.PRODUCTS_DISCOUNT}${query}`);
+      return { data: res.data?.data?.results || [], total: res.data?.data?.count }
+    } catch (error) {
+      console.error("Error al obtener productos con descuento:", error);
+      return { results: [], next: null, count: 0 };
+    }
   },
 
   getById: async (id: number) => {
