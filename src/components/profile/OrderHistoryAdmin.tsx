@@ -100,7 +100,7 @@ export default function OrderHistoryAdmin() {
       case 2:
         return { color: "green", text: "Aprobado" };
       case 3:
-        return { color: "orange", text: "Pendiente en procesar pago" };
+        return { color: "orange", text: "Pendiente" };
       case 4:
         return { color: "red", text: "Fallido" };
       case 5:
@@ -153,7 +153,7 @@ export default function OrderHistoryAdmin() {
   const items: TabsProps["items"] = [
     { key: "2", label: "Aprobado" },
     { key: "5", label: "Enviado" },
-    { key: "3", label: "Pendientes por pagar" },
+    { key: "3", label: "Pendiente" },
     { key: "4", label: "Fallidos" },
     { key: "1", label: "En proceso" },
   ];

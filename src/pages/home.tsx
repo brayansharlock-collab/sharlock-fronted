@@ -7,6 +7,7 @@ import { productService } from "../service/productService";
 import FooterHome from "../components/ui/footerHome";
 import { useNavigate } from "react-router-dom";
 import { FeaturedProducts } from "../components/home/featureproducts";
+import isotipo from "../assets/logos/isotipo.png";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -99,7 +100,6 @@ const Home: React.FC = () => {
 
     return (
         <>
-            {/* 🔹 Pantalla de carga con animaciones */}
             <AnimatePresence>
                 {isLoading && (
                     <motion.div
@@ -125,7 +125,7 @@ const Home: React.FC = () => {
                         <motion.div
                             initial={{ y: 0 }}
                             animate={{
-                                y: isLoading ? 0 : -300, // 👈 sube cuando termina
+                                y: isLoading ? 0 : -300,
                             }}
                             transition={{ duration: 1.2, ease: "easeInOut" }}
                             style={{
@@ -135,26 +135,49 @@ const Home: React.FC = () => {
                                 gap: 20,
                             }}
                         >
-                            {/* Texto SHARLOCK */}
-                            <motion.h1
-                                initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                                animate={{
-                                    opacity: 1,
-                                    y: 0,
-                                    scale: 1,
-                                    color: isLoading ? "#000" : "#fff", // 👈 pasa de negro a blanco
-                                }}
-                                transition={{ duration: 1, ease: "easeOut" }}
+                            <div
                                 style={{
-                                    letterSpacing: "4px",
-                                    fontSize: "clamp(28px, 6vw, 60px)",
-                                    fontWeight: "bold",
-                                    textShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
-                                    fontFamily: "Lora, serif",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    minHeight: "100vh",
+                                    padding: "0 1rem",
                                 }}
                             >
-                                SHARLOCK
-                            </motion.h1>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "clamp(8px, 2vw, 16px)",
+                                        fontFamily: "Lora, serif",
+                                        fontWeight: "bold",
+                                        letterSpacing: "4px",
+                                        fontSize: "clamp(28px, 6vw, 60px)",
+                                        textShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
+                                    }}
+                                >
+                                    <motion.img
+                                        src={isotipo}
+                                        alt="isotipo"
+                                        initial={{ opacity: 0, scale: 0.5, rotateZ: 0 }}
+                                        animate={{
+                                            opacity: 1,
+                                            scale: 1,
+                                            rotateZ: [0, 180, 0],
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            ease: [0.68, -0.55, 0.27, 1.55], 
+                                        }}
+                                        style={{
+                                            width: "clamp(40px, 20vw, 130px)",
+                                            height: "auto",
+                                            flexShrink: 0,
+                                            transformOrigin: "center",
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

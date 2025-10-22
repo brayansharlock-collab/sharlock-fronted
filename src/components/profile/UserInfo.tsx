@@ -27,7 +27,8 @@ import type { Variants } from "framer-motion";
 import { userService, type User } from "../../service/userService";
 import dayjs from "dayjs";
 import { authService } from "../../service/authService";
-import peopleImg from "../../assets/ilustrations/People.gif"
+import peopleImg from "../../assets/ilustrations/undraw_referral_ihsd.svg"
+import Password from "antd/es/input/Password";
 
 const { Title, Text } = Typography;
 
@@ -55,7 +56,6 @@ export default function UserInfo() {
       form.setFieldsValue({
         ...data,
         birth_date: data.birth_date ? dayjs(data.birth_date) : null,
-        // Aseguramos que email y username estén sincronizados al cargar
         email: data.username || data.email,
       });
     } catch {
@@ -136,11 +136,12 @@ export default function UserInfo() {
           style={{
             marginBottom: 24,
             borderRadius: 16,
+            border: "none",
             boxShadow: "none",
-            background: "none",
+            background: "linear-gradient(160deg, #ffffff, #e6e1d7)",
           }}
         >
-          <Row justify="space-between" align="middle">
+          <Row justify="space-between" align="middle" style={{display: "flex", gap: 10}}>
             <Col>
               <Row align="middle" gutter={16}>
                 <Col>
@@ -204,7 +205,6 @@ export default function UserInfo() {
 
         {/* Cuerpo con info y foto */}
         <Row gutter={[24, 24]}>
-          {/* Información personal */}
           <Col xs={24} md={12}>
             <Card
               title="Información personal"
@@ -212,13 +212,13 @@ export default function UserInfo() {
                 borderRadius: 16,
                 boxShadow: "none",
                 background: "none",
+                border: "none",
               }}
             >
               <Form
                 layout="vertical"
                 form={form}
                 onValuesChange={(changedValues) => {
-                  // Sincronizar email con username en tiempo real
                   if (changedValues.username !== undefined) {
                     form.setFieldsValue({ email: changedValues.username });
                   }
@@ -227,12 +227,17 @@ export default function UserInfo() {
                 <Form.Item
                   label="Nombre de usuario"
                   name="username"
-                  rules={[{ required: true, message: 'Por favor ingresa un nombre de usuario' }]}
                 >
                   <Input prefix={<UserOutlined />} disabled={!editing} />
                 </Form.Item>
 
-                {/* Campo oculto: email se sincroniza con username */}
+                <Form.Item
+                  label="Contraseña"
+                  name="password"
+                >
+                  <Password disabled={!editing} />
+                </Form.Item>
+
                 <Form.Item name="email" noStyle>
                   <Input type="hidden" />
                 </Form.Item>
@@ -274,8 +279,6 @@ export default function UserInfo() {
                 alt="Ilustración"
                 style={{
                   width: "300px",
-                  // maxWidth: "100%",
-                  // maxHeight: 350,
                   borderRadius: 16,
                   objectFit: "cover",
                 }}

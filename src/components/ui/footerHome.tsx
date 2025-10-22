@@ -6,6 +6,7 @@ import {
   InstagramOutlined,
   FacebookOutlined,
 } from "@ant-design/icons";
+import isotipo from "../../assets/logos/isotipo.png";
 
 const { Text, Title } = Typography;
 
@@ -39,11 +40,48 @@ export default function FooterHome() {
           borderBottom: "1px solid #222",
         }}
       >
-        {/* Logo y descripción */}
         <div style={{ maxWidth: "340px" }}>
-          <Title level={2} style={{ marginBottom: "1rem", fontWeight: 600, letterSpacing: "1px", color: "white" }}>
-            SHARLOCK
-          </Title>
+          <div
+          className="logo"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "clamp(8px, 2vw, 16px)",
+              marginBottom: "1rem",
+              fontFamily: "Lora, serif",
+              fontWeight: "bold",
+              letterSpacing: "4px",
+              fontSize: "clamp(28px, 6vw, 60px)",
+              textShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
+            }}
+          >
+            <motion.img
+              src={isotipo}
+              alt="isotipo"
+              initial={{ opacity: 1, scale: 1, rotateZ: 0 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                rotateZ: [0, 180, 0],
+              }}
+              transition={{
+                duration: 1.5,
+                ease: [0.68, -0.55, 0.27, 1.55],
+              }}
+              style={{
+                width: "48px",
+                height: "auto",
+                flexShrink: 0,
+                transformOrigin: "center",
+                filter: "invert(1) brightness(1.2) contrast(1.1)"
+
+              }}
+            />
+            <Title level={2} style={{ marginBottom: "0rem", fontWeight: 600, letterSpacing: "1px", color: "white" }}>
+              SHARLOCK
+            </Title>
+          </div>
+
           <Text style={{ color: "#ccc", fontSize: "0.95rem", lineHeight: "1.6" }}>
             Estilo y calidad en cada prenda. Descubre la moda que te define.
           </Text>
@@ -154,6 +192,9 @@ export default function FooterHome() {
       <style>
         {`
           @media (max-width: 768px) {
+          .logo {
+          justify-content: center
+          }
             footer {
               text-align: center !important;
             }

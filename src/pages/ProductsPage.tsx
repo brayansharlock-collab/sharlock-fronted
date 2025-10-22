@@ -1,5 +1,5 @@
 // src/pages/ProductsPage.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Layout, Slider, Button, Spin, Checkbox, Divider, Row, Col, Empty, Grid, Drawer, Badge } from "antd";
 import { SearchBarAntd } from "../components/ui/Search";
 import { ProductCard } from "../components/ui/ProductCard";
@@ -25,21 +25,22 @@ export const ProductsPage: React.FC = () => {
     const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
 
     const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const loadingRef = useRef(false);
+
     const [restored, setRestored] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
-
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [cartCount, setCartCount] = useState(2);
     const screens = useBreakpoint();
     const lastFetchId = useRef(0);
-
     const [userChangedFilters, setUserChangedFilters] = useState(false);
-
     const [derivedCategory, setDerivedCategory] = useState<number | null>(null);
+    const pageRef = useRef(1);
 
     const displayedCategory = searchTerm ? (userChangedFilters ? selectedCategory : derivedCategory) : selectedCategory;
 
@@ -96,7 +97,6 @@ export const ProductsPage: React.FC = () => {
         })();
     }, []);
 
-    // cargar subcategorías cuando cambia la categoría
     useEffect(() => {
         (async () => {
             if (!selectedCategory) {
@@ -107,6 +107,7 @@ export const ProductsPage: React.FC = () => {
             try {
                 const selectedCat = categories.find((c) => c.id === selectedCategory);
                 setSubcategories(selectedCat?.sub_category || []);
+
                 setSubcategoryFilters([]);
             } catch (err) {
                 console.error("Error subcategorias:", err);
@@ -115,22 +116,29 @@ export const ProductsPage: React.FC = () => {
         })();
     }, [selectedCategory, categories]);
 
-    // handler seleccionar subcategoría
     const handleSelectSubcategory = async (subId: number) => {
+        if (selectedSubcategories.includes(subId)) {
+            setSelectedSubcategories([]);
+            setSubcategoryFilters([]);
+            setSelectedFilters([]);
+            setUserChangedFilters(true);
+            return;
+        }
+
+        // Si es una nueva selección, reemplazamos el array con este solo ID
         try {
             const data = await productService.subcategories(subId);
             setSubcategoryFilters(data.filter_name_detail || []);
             setSelectedSubcategories([subId]);
             setSelectedFilters([]);
-
             setUserChangedFilters(true);
         } catch (err) {
             console.error("Error cargando filtros de subcategoría:", err);
             setSubcategoryFilters([]);
+            setSelectedSubcategories([]); 
         }
     };
 
-    // Construye params para la API de productos
     const buildParams = () => {
         const body: any = {};
         if (searchTerm) {
@@ -144,7 +152,7 @@ export const ProductsPage: React.FC = () => {
                         : selectedSubcategories.join(",");
             }
             if (selectedFilters.length > 0) {
-                body.filters = selectedFilters.join(",");
+                body.filters = selectedFilters;
             }
         }
         if (priceRange?.[0] !== undefined) body.min_price = priceRange[0];
@@ -152,62 +160,92 @@ export const ProductsPage: React.FC = () => {
         return body;
     };
 
-    // fetchProducts usando productService.list(params)
-    const fetchProducts = async () => {
-        const fetchId = ++lastFetchId.current;
+    const productsRef = useRef<any[]>([]);
+    useEffect(() => {
+        productsRef.current = products;
+    }, [products]);
+
+    const fetchProducts = useCallback(async (append = false) => {
+        if (loadingRef.current) return;
+        loadingRef.current = true;
+
+        const currentFetchId = ++lastFetchId.current;
+        const currentPage = append ? pageRef.current : 1;
+
         try {
-            setLoading(true);
             const body = buildParams();
-            const data = await productService.list(body);
+            const res = await productService.list(body, pageRef.current);
 
-            if (fetchId !== lastFetchId.current) return;
 
-            const results = Array.isArray(data) ? data : [];
-            setProducts(results);
-            setFilteredProducts(results);
+            if (currentFetchId !== lastFetchId.current) return;
 
-            if (searchTerm && results.length > 0) {
-                const uniqueCategoryIds = Array.from(
-                    new Set(results.map((p: any) => p.subcategory?.category_detail?.id).filter(Boolean))
+            const results = Array.isArray(res.data) ? res.data : [];
+            const total = res.total || 0;
+
+            setProducts(prev => {
+                const newProducts = append ? [...prev, ...results] : results;
+
+                // eliminar duplicados por ID (por si la API repite alguno)
+                const uniqueProducts = newProducts.filter(
+                    (p, i, self) => i === self.findIndex(x => x.id === p.id)
                 );
 
-                const uniqueSubcatObjs = results
-                    .map((p: any) => p.subcategory)
-                    .filter(Boolean)
-                    .reduce((acc: any[], cur: any) => {
-                        if (!acc.some((s) => s.id === cur.id)) acc.push(cur);
-                        return acc;
-                    }, []);
+                setFilteredProducts(uniqueProducts);
 
-                setDerivedCategory(uniqueCategoryIds.length === 1 ? uniqueCategoryIds[0] : null);
+                setHasMore(uniqueProducts.length < total);
 
-                if (uniqueCategoryIds.length === 1) {
-                    const foundCat = categories.find((c) => c.id === uniqueCategoryIds[0]);
-                    if (foundCat) {
-                        setSubcategories(foundCat.sub_category || []);
-                    } else {
-                        setSubcategories(uniqueSubcatObjs);
-                    }
+                if (append && results.length > 0) {
+                    pageRef.current = currentPage + 1;
                 } else {
-                    setSubcategories(uniqueSubcatObjs);
+                    pageRef.current = 2;
                 }
-            } else {
-                setDerivedCategory(null);
-                if (!selectedCategory) setSubcategories([]);
-            }
+
+                return uniqueProducts;
+            });
+
         } catch (err) {
-            if (fetchId !== lastFetchId.current) return;
+            if (currentFetchId !== lastFetchId.current) return;
             console.error("Error productos:", err);
-            setProducts([]);
-            setFilteredProducts([]);
+            if (!append) {
+                setProducts([]);
+                setFilteredProducts([]);
+            }
         } finally {
-            if (fetchId === lastFetchId.current) setLoading(false);
+            loadingRef.current = false;
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    }, [buildParams]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!hasMore || loadingRef.current) return;
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            if (scrollY + windowHeight >= documentHeight - 500) {
+                setLoadingMore(true);
+                fetchProducts(true);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [hasMore, fetchProducts]);
+
+    const handleLoadMore = () => {
+        if (hasMore && !loadingRef.current) {
+            setLoadingMore(true);
+            fetchProducts(true);
         }
     };
 
     useEffect(() => {
         if (!restored) return;
-        fetchProducts();
+
+        setLoading(true);
+        pageRef.current = 1;
+        fetchProducts(false);
     }, [restored, selectedCategory, selectedSubcategories, selectedFilters, priceRange, searchTerm]);
 
     // resetear filtros
@@ -239,10 +277,9 @@ export const ProductsPage: React.FC = () => {
         }
     };
 
-    // filtros (lo extraemos para usarlo en Sider y Drawer)
     const FiltersContent = (
         <div>
-            <h3 style={{ marginBottom: 12 }}>Categorías</h3>
+            <h2 style={{ marginBottom: 12 }}>Categorías</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {Array.isArray(categories) && categories.length > 0 ? (
                     categories.map((cat: any) => (
@@ -271,7 +308,7 @@ export const ProductsPage: React.FC = () => {
 
             <Divider />
 
-            <h3 style={{ marginBottom: 12 }}>Subcategorías</h3>
+            <h2 style={{ marginBottom: 12 }}>Subcategorías</h2>
             {displayedCategory ? (
                 Array.isArray(subcategories) && subcategories.length > 0 ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -282,7 +319,6 @@ export const ProductsPage: React.FC = () => {
                                 onChange={() => {
                                     handleSelectSubcategory(sub.id);
 
-                                    // si venías de búsqueda, haz transición al modo manual
                                     if (searchTerm) {
                                         setSearchTerm("");
                                         setDerivedCategory(null);
@@ -304,24 +340,29 @@ export const ProductsPage: React.FC = () => {
 
             <Divider />
 
-            <h3 style={{ marginBottom: 12 }}>Filtros</h3>
+            <h2 style={{ marginBottom: 12 }}>Filtros</h2>
             {subcategoryFilters.length > 0 ? (
                 subcategoryFilters.map((filter) => (
                     <div key={filter.id} style={{ marginBottom: 8 }}>
-                        <strong>{filter.name}</strong>
+                          <h3 style={{ marginBottom: 12 }}>{filter.name}</h3>
                         <div style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
                             {filter.filter_option_detail.map((opt: any) => (
-                                <Checkbox
-                                    key={opt.id}
-                                    checked={selectedFilters.includes(opt.id)}
-                                    onChange={() => {
-                                        setSelectedFilters((prev) =>
-                                            prev.includes(opt.id) ? prev.filter((id) => id !== opt.id) : [...prev, opt.id]
-                                        );
-                                    }}
-                                >
-                                    {opt.name} ({opt.products})
-                                </Checkbox>
+                                <div key={opt.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                                    <Checkbox
+                                        key={opt.id}
+                                        checked={selectedFilters.includes(opt.id)}
+                                        onChange={() => {
+                                            setSelectedFilters((prev) =>
+                                                prev.includes(opt.id) ? prev.filter((id) => id !== opt.id) : [...prev, opt.id]
+                                            );
+                                        }}
+                                    >
+                                        {opt.name}
+                                    </Checkbox>
+                                    <span>
+                                        ({opt.products})
+                                    </span>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -332,7 +373,7 @@ export const ProductsPage: React.FC = () => {
 
             <Divider />
 
-            <h3 style={{ marginBottom: 12 }}>Precio</h3>
+            <h2 style={{ marginBottom: 12 }}>Precio</h2>
             <div style={{ padding: "0 8px" }}>
                 <Slider
                     range
@@ -474,11 +515,7 @@ export const ProductsPage: React.FC = () => {
                 {screens.lg ? (
                     <Sider
                         width={250}
-                        style={{
-                            background: "#fff",
-                            padding: 20,
-                            color: "black",
-                        }}
+                        style={{ position: 'sticky', top: 0, height: "100vh", background: '#fff', padding: 20, color: 'black', }}
                     >
                         {FiltersContent}
                     </Sider>
@@ -506,10 +543,10 @@ export const ProductsPage: React.FC = () => {
                     <Content style={{
                         flex: 1,
                         overflowY: "auto",
-                        padding: 0, 
+                        padding: 0,
                     }}>
                         {loading ? (
-                            <div style={{ textAlign: "center", paddingTop: 60 }}>
+                            <div style={{ textAlign: "center",minHeight: "60vh", paddingTop: 60 }}>
                                 <Spin size="large" />
                             </div>
                         ) : (
@@ -519,33 +556,46 @@ export const ProductsPage: React.FC = () => {
                                         <Empty description="No se encontraron productos" />
                                     </div>
                                 ) : (
-                                    <Row gutter={[20, 20]}>
-                                        {filteredProducts.map((product: any) => {
-                                            const discountPercent = calculateDiscountPercent(
-                                                product.active_discount,
-                                                product.final_price,
-                                                product.final_price_discount
-                                            )
+                                    <>+
+                                        <Row gutter={[20, 20]}>
+                                            {filteredProducts.map((product: any) => {
+                                                const discountPercent = calculateDiscountPercent(
+                                                    product.active_discount,
+                                                    product.final_price,
+                                                    product.final_price_discount
+                                                );
+                                                const images = getProductImages(product);
+                                                return (
+                                                    <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                                                        <ProductCard
+                                                            images={images}
+                                                            id={product.id}
+                                                            name={product.name}
+                                                            image={product.image_cover}
+                                                            price={product.final_price_discount}
+                                                            originalPrice={product.active_discount > 0 ? product.final_price : null}
+                                                            rating={product.average_rating}
+                                                            discountPercent={discountPercent}
+                                                            isNew={isNewProduct(product.created_at)}
+                                                            initialIsFavorite={product.is_favorite || false}
+                                                        />
+                                                    </Col>
+                                                );
+                                            })}
+                                        </Row>
 
-                                            const images = getProductImages(product)
-                                            return (
-                                                <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
-                                                    <ProductCard
-                                                        images={images}
-                                                        id={product.id}
-                                                        name={product.name}
-                                                        image={product.image_cover}
-                                                        price={product.final_price_discount}
-                                                        originalPrice={product.active_discount > 0 ? product.final_price : null}
-                                                        rating={product.average_rating}
-                                                        discountPercent={discountPercent}
-                                                        isNew={isNewProduct(product.created_at)}
-                                                        initialIsFavorite={product.is_favorite || false}
-                                                    />
-                                                </Col>
-                                            );
-                                        })}
-                                    </Row>
+                                        {hasMore && (
+                                            <div style={{ textAlign: "center", marginTop: "40px" }}>
+                                                <Button
+                                                    onClick={handleLoadMore}
+                                                    loading={loadingMore}
+                                                    disabled={loadingMore}
+                                                >
+                                                    {loadingMore ? "Cargando..." : "Ver más productos"}
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         )}

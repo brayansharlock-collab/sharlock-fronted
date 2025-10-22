@@ -1,13 +1,17 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import {
-  Card, Button, Row, Col, message, Modal, Form, Input, Select, Space, Tag, Typography, Popconfirm, Switch,
+  Card, Button, Row, Col, message, Modal, Form, Input, Select, Space, Tag, Typography, Popconfirm, Switch, Empty
 } from "antd";
 import {
-  DeleteOutlined, EditOutlined, HomeOutlined, PlusOutlined, StarFilled, StarOutlined,
+  DeleteOutlined, EditOutlined, HomeOutlined, PlusOutlined, StarFilled, StarOutlined
 } from "@ant-design/icons";
-import { addressService, type Address, type AddressType, type Department } from "../../service/addressService";
-import errorGif from "../../assets/ilustrations/error.gif";
+import { motion } from "framer-motion";
+import {
+  addressService, type Address, type AddressType, type Department
+} from "../../service/addressService";
+import boo from "../../assets/ilustrations/error.gif";
 
 const { Option } = Select;
 const { Text, Title } = Typography;
@@ -98,156 +102,212 @@ export default function AddressList() {
 
   return (
     <>
-      {addresses.length > 0 ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            width: "100%",
-            marginBottom: 16,
-          }}
-        >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => openModal()}
-          >
-            Agregar otra dirección
+      {contextHolder}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <Title level={3} style={{ margin: 0 }}>Mis direcciones</Title>
+        {addresses.length > 0 ? (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            Agregar dirección
           </Button>
-        </div>
-      ) : null}
-      <div style={{ maxHeight: "65vh", overflowY: "auto" }}>
-        {contextHolder}
-        <Row gutter={[0, 16]}>
-          {addresses.length > 0 ? (
-            addresses.map((addr) => (
-              <Col xs={24} key={addr.id}>
+        ) : null}
+      </div>
+
+      {addresses.length > 0 ? (
+        <Row gutter={[16, 16]}>
+          {addresses.map((addr) => (
+            <Col xs={24} sm={12} lg={8} key={addr.id}>
+              <motion.div whileHover={{ scale: 1.02 }}>
                 <Card
-                  extra={
-                    <Space>
-                      <Button icon={<EditOutlined />} onClick={() => openModal(addr)} />
-                      <Popconfirm
-                        title="Eliminar dirección"
-                        onConfirm={() => handleDelete(addr)}
-                        okButtonProps={{ danger: true }}
-                      >
-                        <Button danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    </Space>
-                  }
+                  style={{
+                    borderRadius: 16,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                    transition: "all 0.3s ease",
+                  }}
+                  actions={[
+                    <EditOutlined key="edit" onClick={() => openModal(addr)} />,
+                    <Popconfirm
+                      title="¿Eliminar esta dirección?"
+                      onConfirm={() => handleDelete(addr)}
+                      okButtonProps={{ danger: true }}
+                    >
+                      <DeleteOutlined key="delete" />
+                    </Popconfirm>,
+                  ]}
                 >
-                  <div style={{ display: "flex" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 24, background: "#eef7f0", display: "flex", alignItems: "center", justifyContent: "center", marginRight: 12 }}>
-                      <HomeOutlined style={{ color: "#2c8f6b", fontSize: 18 }} />
+                  <Space align="start">
+                    <div
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #ffffffff, #d4cabeff, #7a6449)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        fontSize: 22,
+                      }}
+                    >
+                      <HomeOutlined />
                     </div>
+
                     <div style={{ flex: 1 }}>
-                      <Space>
-                        <Tag color="#2f8f5a">
-                          <StarFilled style={{ color: "#fff", marginRight: 6 }} />
+                      <Space wrap>
+                        <Tag color="#7a644983">
+                          <StarFilled style={{ marginRight: 6 }} />
                           {addr.type_of_address?.name ?? "Casa"}
                         </Tag>
                         {addr.is_principal && <Tag color="green">Principal</Tag>}
                       </Space>
-                      <div style={{ marginTop: 12 }}>
+
+                      <div style={{ marginTop: 8 }}>
                         <Text strong>{addr.address}</Text>
                         <div>
                           <Text type="secondary">
-                            {addr.city?.name}, {addr.department?.name} {addr.postal_code ? `· ${addr.postal_code}` : ""}
+                            {addr.city?.name}, {addr.department?.name}
+                            {addr.postal_code && ` · ${addr.postal_code}`}
                           </Text>
                         </div>
                         <Text>{addr.telephone_number}</Text>
                         {!addr.is_principal && (
-                          <Button type="link" onClick={() => handleSetPrincipal(addr)}>
-                            <StarOutlined /> Hacer principal
+                          <Button
+                            style={{ border: "#7a6449", boxShadow: "none" }}
+                            size="small"
+                            onClick={() => handleSetPrincipal(addr)}
+                            icon={<StarOutlined />}
+                          >
+                            Hacer principal
                           </Button>
                         )}
                       </div>
                     </div>
-                  </div>
+                  </Space>
                 </Card>
-              </Col>
-            ))
-          ) : (
-            <Col xs={24}>
-              <div style={{ textAlign: "center", padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-                <img src={errorGif} alt="error" />
-                <Title level={5}>No tienes direcciones registradas</Title>
-                <Text type="secondary">Añade una dirección para recibir tus pedidos.</Text>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                  Agregar primera dirección
-                </Button>
-              </div>
+              </motion.div>
             </Col>
-          )}
+          ))}
         </Row>
-
-        <Modal
-          title={editing ? "Editar Dirección" : "Nueva Dirección"}
-          open={open}
-          onCancel={() => setOpen(false)}
-          footer={[
-            <Button key="cancel" onClick={() => setOpen(false)}>Cancelar</Button>,
-            <Button key="save" type="primary" onClick={handleSave}>Guardar</Button>,
-          ]}
+      ) : (
+        <Empty
+          image={<img src={boo} alt="empty" style={{ height: 160, margin: "0 auto" }} />}
+          style={{ padding: "48px 24px", textAlign: "center" }}
+          description={
+            <>
+              <Title level={5} style={{ marginTop: 30 }}>Mmm... no veo nada por acá ¿quieres agregar una dirección?</Title>
+              <Text type="secondary">Agrega una dirección para recibir tus pedidos.</Text>
+            </>
+          }
         >
-          <Form form={form} layout="vertical">
-            <Row gutter={12}>
-              {[
-                { name: "address", label: "Dirección", required: true },
-                { name: "telephone_number", label: "Teléfono" },
-                { name: "barrio", label: "Barrio" },
-                { name: "apartment", label: "Apartamento (opcional)" },
-                { name: "indications", label: "Indicaciones" },
-                { name: "postal_code", label: "Código Postal" },
-              ].map((f) => (
-                <Col span={12} key={f.name}>
-                  <Form.Item name={f.name} label={f.label} rules={f.required ? [{ required: true }] : []}>
-                    <Input />
-                  </Form.Item>
-                </Col>
-              ))}
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            Agregar primera dirección
+          </Button>
+        </Empty>
 
-              <Col span={12}>
-                <Form.Item name="department" label="Departamento" rules={[{ required: true }]}>
-                  <Select placeholder="Seleccione un departamento" onChange={handleDepartmentChange}>
-                    {departments.map((d) => (
-                      <Option key={d.id} value={d.id}>{d.name}</Option>
-                    ))}
-                  </Select>
+      )}
+
+      <Modal
+        title={editing ? "Editar Dirección" : "Nueva Dirección"}
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>,
+          <Button key="save" type="primary" onClick={handleSave}>
+            Guardar
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical">
+          <Row gutter={12}>
+            {/* Campos de texto básicos */}
+            {[
+              { name: "address", label: "Dirección", required: true },
+              { name: "telephone_number", label: "Teléfono" },
+              { name: "barrio", label: "Barrio" },
+              { name: "apartment", label: "Apartamento (opcional)" },
+              { name: "indications", label: "Indicaciones" },
+              { name: "postal_code", label: "Código Postal" },
+            ].map((f) => (
+              <Col span={12} key={f.name}>
+                <Form.Item
+                  name={f.name}
+                  label={f.label}
+                  rules={f.required ? [{ required: true, message: `Ingrese ${f.label}` }] : []}
+                >
+                  <Input />
                 </Form.Item>
               </Col>
+            ))}
 
-              <Col span={12}>
-                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
-                  <Select placeholder="Seleccione una ciudad">
-                    {cities.map((c) => (
-                      <Option key={c.id} value={c.id}>{c.name}</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
+            {/* Departamento */}
+            <Col span={12}>
+              <Form.Item
+                name="department"
+                label="Departamento"
+                rules={[{ required: true, message: "Seleccione un departamento" }]}
+              >
+                <Select
+                  placeholder="Seleccione un departamento"
+                  onChange={handleDepartmentChange}
+                >
+                  {departments.map((d) => (
+                    <Option key={d.id} value={d.id}>
+                      {d.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
 
-              <Col span={12}>
-                <Form.Item name="type_of_address" label="Tipo de Dirección" rules={[{ required: true }]}>
-                  <Select>
-                    {addressTypes.map((t) => (
-                      <Option key={t.id} value={t.id}>{t.name}</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
+            {/* Ciudad */}
+            <Col span={12}>
+              <Form.Item
+                name="city"
+                label="Ciudad"
+                rules={[{ required: true, message: "Seleccione una ciudad" }]}
+              >
+                <Select placeholder="Seleccione una ciudad">
+                  {cities.map((c) => (
+                    <Option key={c.id} value={c.id}>
+                      {c.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
 
-              <Col span={12}>
-                <Form.Item name="is_principal" label="Quieres que sea principal?" valuePropName="checked">
-                  <Switch />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
-      </div>
+            {/* Tipo de dirección */}
+            <Col span={12}>
+              <Form.Item
+                name="type_of_address"
+                label="Tipo de Dirección"
+                rules={[{ required: true, message: "Seleccione el tipo de dirección" }]}
+              >
+                <Select placeholder="Seleccione un tipo">
+                  {addressTypes.map((t) => (
+                    <Option key={t.id} value={t.id}>
+                      {t.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+
+            {/* Dirección principal */}
+            <Col span={12}>
+              <Form.Item
+                name="is_principal"
+                label="¿Quieres que sea principal?"
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
 
     </>
-
   );
 }

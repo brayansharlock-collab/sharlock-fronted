@@ -46,8 +46,8 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
             setLoading(true);
             const body = buildBody();
             const res = await productService.list(body, page, itemsPerPage);
-            setProducts(res);
-            setHasMore(Array.isArray(res) ? res.length >= itemsPerPage : false);
+            setProducts(res.data);
+            setHasMore(Array.isArray(res.data) ? res.data.length >= itemsPerPage : false);
         } catch (error) {
             console.error("Error al cargar productos similares:", error);
             setProducts([]);
@@ -101,7 +101,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                     letterSpacing: "0.5px",
                 }}
             >
-                Productos que también te podrían gustar
+                Productos similares
             </motion.h2>
 
             <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
@@ -139,16 +139,16 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                     }}
                 >
                     <motion.div
-                        key={`${page}-${itemsPerPage}-${products.length}`}
-                        initial={{ opacity: 0, x: 60 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.35 }}
+                        initial={false}
+                        animate={{ opacity: loading ? 0.4 : 1, x: 0 }}
+                        transition={{ duration: 0.3 }}
                         style={{
                             display: "grid",
                             gridTemplateColumns: `repeat(${itemsPerPage}, 1fr)`,
                             gap: windowWidth < 768 ? 16 : 24,
                             width: "100%",
                             alignItems: "stretch",
+                            transition: "opacity 0.25s ease-in-out", // refuerzo visual
                         }}
                     >
                         {products.length > 0 ? (

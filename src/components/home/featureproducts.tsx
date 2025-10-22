@@ -6,82 +6,75 @@ import { useNavigate } from "react-router-dom"
 import { productService } from "../../service/productService"
 
 interface DiscountProduct {
-    id: number;
-    name: string;
-    slug: string;
-    image_cover: string;
-    active_discount: number;
-    final_price: string;
-    final_price_discount: string;
-    average_rating: number;
+    id: number
+    name: string
+    slug: string
+    image_cover: string
+    active_discount: number
+    final_price: string
+    final_price_discount: string
+    average_rating: number
 }
 
 export const FeaturedProducts: React.FC = () => {
     const navigate = useNavigate()
     const [products, setProducts] = useState<DiscountProduct[]>([])
     const [page, setPage] = useState(1)
-    const [hasMore, setHasMore] = useState(true)
-    const [loading, setLoading] = useState(false)
     const loadingRef = useRef(false)
-    const itemsPerPage = 6
+    const itemsPerPage = 5
+    const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-    const fetchDiscountedProducts = useCallback(async (append = false) => {
-        if (loadingRef.current) return
+    /** 🔹 Traer productos de la API */
+    const fetchDiscountedProducts = useCallback(
+        async (pageToLoad: number) => {
+            if (loadingRef.current) return
+            loadingRef.current = true
 
-        loadingRef.current = true
-        setLoading(true)
+            try {
+                const res = await productService.getDiscountProducts(pageToLoad, itemsPerPage)
+                const results = Array.isArray(res?.data) ? res.data : []
+                const total = res?.total ?? 0
 
-        try {
-            const res = await productService.getDiscountProducts(page, itemsPerPage)
-            const results = Array.isArray(res?.data) ? res.data : []
-            const total = res?.total ?? 0
+                if (!results.length) {
+                    setPage(1)
+                    fetchDiscountedProducts(1)
+                    return
+                }
 
-            if (append) {
-                setProducts(prev => [...prev, ...results])
-            } else {
                 setProducts(results)
+
+                const totalPages = Math.ceil(total / itemsPerPage)
+                setPage((prev) => (pageToLoad >= totalPages ? 1 : prev + 1))
+            } catch (err) {
+                console.error("Error al cargar productos:", err)
+                setPage(1)
+            } finally {
+                loadingRef.current = false
             }
-
-            const totalCargados = (append ? products.length : 0) + results.length
-            setHasMore(totalCargados < total)
-
-            if (totalCargados < total) {
-                setPage(prev => prev + 1)
-            }
-
-        } catch (err) {
-            console.error("Error al cargar productos:", err)
-        } finally {
-            loadingRef.current = false
-            setLoading(false)
-        }
-    }, [page, products])
+        },
+        [itemsPerPage]
+    )
 
     useEffect(() => {
-        fetchDiscountedProducts(false)
-    }, [])
+        fetchDiscountedProducts(1)
+    }, [fetchDiscountedProducts])
+
+    useEffect(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current)
+
+        intervalRef.current = setInterval(() => {
+            fetchDiscountedProducts(page)
+        }, 8000)
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current)
+        }
+    }, [page, fetchDiscountedProducts])
 
     const handleProductClick = (product: DiscountProduct) => {
         navigate(`/producto/${product.slug}/${product.id}`)
     }
 
-    const handleSeeAll = async () => {
-        if (hasMore) {
-            await fetchDiscountedProducts(true)
-        } else {
-            navigate("/products")
-        }
-    }
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (!hasMore || loadingRef.current) return
-            const bottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 400
-            if (bottom) fetchDiscountedProducts(true)
-        }
-        window.addEventListener("scroll", handleScroll)
-        return () => window.removeEventListener("scroll", handleScroll)
-    }, [hasMore, fetchDiscountedProducts])
 
     return (
         <section style={{ padding: "10px 0px 70px 0px", position: "relative" }}>
@@ -130,35 +123,35 @@ export const FeaturedProducts: React.FC = () => {
                     display: "grid",
                     gridTemplateColumns: "repeat(2, 1fr)",
                     gridAutoRows: "auto",
-                    width: "100%",
-                    maxWidth: "1400px",
+                    width: "95%",
+                    maxWidth: "1200px",
                     margin: "0 auto",
-                    gap: "8px",
+                    gap: "20px",
                 }}
             >
                 <style>
                     {`
-                    @media (max-width: 768px) {
-                      div[style*="gridTemplateColumns: repeat(2"] {
-                        grid-template-columns: 1fr !important;
-                      }
-                    }
-                  `}
+          @media (max-width: 768px) {
+            div[style*="gridTemplateColumns: repeat(2"] {
+              grid-template-columns: 1fr !important;
+            }
+          }
+        `}
                 </style>
 
                 {products.map((product, index) => (
                     <motion.div
-                        key={product.id}
+                        key={"key-featured-product-" + product.id}
                         initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
                         style={{
                             position: "relative",
                             cursor: "pointer",
                             overflow: "hidden",
                             backgroundColor: "#fff",
-                            borderRadius: "0px",
+                            borderRadius: "20px",
                             gridColumn: index % 5 === 0 ? "span 2" : "span 1",
                         }}
                         onClick={() => handleProductClick(product)}
@@ -183,7 +176,6 @@ export const FeaturedProducts: React.FC = () => {
                                     width: "100%",
                                     height: "100%",
                                     objectFit: "cover",
-                                    transition: "transform 0.4s ease",
                                 }}
                             />
 
@@ -232,7 +224,13 @@ export const FeaturedProducts: React.FC = () => {
                                     {product.name}
                                 </h3>
 
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                    }}
+                                >
                                     <span style={{ fontSize: "16px", fontWeight: "600" }}>
                                         ${product.final_price}
                                     </span>
@@ -266,41 +264,13 @@ export const FeaturedProducts: React.FC = () => {
                         </div>
                     </motion.div>
                 ))}
-            </div>
 
-            {/* CTA */}
-            <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                style={{ textAlign: "center", marginTop: "80px" }}
-            >
-                <button
-                    style={{
-                        fontFamily: "inherit",
-                        fontSize: "14px",
-                        letterSpacing: "2px",
-                        textTransform: "uppercase",
-                        padding: "16px 48px",
-                        backgroundColor: "#2a2a2a",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "30px",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        fontWeight: "500",
-                    }}
-                    onClick={handleSeeAll}
-                    disabled={loading}
-                >
-                    {loading
-                        ? "Cargando..."
-                        : hasMore
-                            ? "Ver Más Productos"
-                            : "Ver Página de Productos"}
-                </button>
-            </motion.div>
+            </div>
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.6 }} style={{ textAlign: "center", marginTop: "80px" }} >
+                    <button style={{ fontFamily: "inherit", fontSize: "14px", letterSpacing: "2px", textTransform: "uppercase", padding: "16px 48px", backgroundColor: "#2a2a2a", color: "#fff", border: "none", borderRadius: "30px", cursor: "pointer", transition: "all 0.3s ease", fontWeight: "500", }}
+                        onClick={() => { navigate("/products") }} >  Ver Más Catálogo
+                    </button>
+                </motion.div>
         </section>
     )
 }
