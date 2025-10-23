@@ -556,7 +556,7 @@ export const ProductsPage: React.FC = () => {
                                         <Empty description="No se encontraron productos" />
                                     </div>
                                 ) : (
-                                    <>+
+                                    <>
                                         <Row gutter={[20, 20]}>
                                             {filteredProducts.map((product: any) => {
                                                 const discountPercent = calculateDiscountPercent(

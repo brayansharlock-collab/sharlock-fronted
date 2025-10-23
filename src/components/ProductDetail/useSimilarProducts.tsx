@@ -5,6 +5,7 @@ import { productService } from "../../service/productService";
 import { ProductCard } from "../ui/ProductCard";
 import { isNewProduct } from "../../utils/dateUtils";
 import { calculateDiscountPercent, getProductImages } from "../../utils/productUtils";
+import { saveRecentProduct } from "../../utils/recentProducts";
 
 interface SimilarProductsCarouselProps {
     currentProduct: any;
@@ -17,7 +18,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
     const [loading, setLoading] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-    // ✅ Define items por página según el tamaño real del viewport
+    // Define items por página según el tamaño real del viewport
     const itemsPerPage = useMemo(() => {
         if (windowWidth < 600) return 1;
         if (windowWidth < 900) return 2;
@@ -31,6 +32,12 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    useEffect(() => {
+        if (currentProduct) {
+            saveRecentProduct(currentProduct);
+        }
+    }, [currentProduct]);
 
     const buildBody = () => {
         const body: any = {};
@@ -101,10 +108,11 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                     letterSpacing: "0.5px",
                 }}
             >
-                Productos similares
+                Productos que pueden gustarte
             </motion.h2>
 
-            <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
+                
+            <div style={{ display: "flex", alignItems: "center", position: "relative", minHeight: "50vh", }}>
                 {/* Botón Izquierda */}
                 <button
                     onClick={prevPage}
@@ -148,7 +156,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                             gap: windowWidth < 768 ? 16 : 24,
                             width: "100%",
                             alignItems: "stretch",
-                            transition: "opacity 0.25s ease-in-out", // refuerzo visual
+                            transition: "opacity 0.25s ease-in-out",
                         }}
                     >
                         {products.length > 0 ? (
@@ -206,7 +214,7 @@ export default function SimilarProductsCarousel({ currentProduct }: SimilarProdu
                             >
                                 {loading
                                     ? "Cargando..."
-                                    : "No hay más productos similares"}
+                                    : "No hay más productos"}
                             </div>
                         )}
                     </motion.div>

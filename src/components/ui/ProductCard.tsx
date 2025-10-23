@@ -11,7 +11,7 @@ interface ProductCardProps {
   name: string;
   image?: string;
   images?: string[];
-  price: number;
+  price?: number;
   quantity?: number;
   rating?: number;
   originalPrice?: number;

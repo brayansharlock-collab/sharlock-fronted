@@ -8,6 +8,7 @@ import FooterHome from "../components/ui/footerHome";
 import { useNavigate } from "react-router-dom";
 import { FeaturedProducts } from "../components/home/featureproducts";
 import isotipo from "../assets/logos/isotipo.png";
+// import SimilarProductsCarousel from "../components/ProductDetail/useSimilarProducts";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
@@ -98,6 +99,11 @@ const Home: React.FC = () => {
         navigate("/products");
     };
 
+    // useEffect(() => {
+    //     const stored = JSON.parse(localStorage.getItem("recentProducts") || "[]");
+    //         setRecentProducts(stored);
+    // }, []);
+
     return (
         <>
             <AnimatePresence>
@@ -167,7 +173,7 @@ const Home: React.FC = () => {
                                         }}
                                         transition={{
                                             duration: 1.5,
-                                            ease: [0.68, -0.55, 0.27, 1.55], 
+                                            ease: [0.68, -0.55, 0.27, 1.55],
                                         }}
                                         style={{
                                             width: "clamp(40px, 20vw, 130px)",
@@ -182,6 +188,8 @@ const Home: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+
 
             {/* 🔹 Contenido principal */}
             {!isLoading && (
@@ -280,8 +288,13 @@ const Home: React.FC = () => {
                     </div>
                 </div>
             )}
-
+            {/* {!isLoading && <RecentProducts />} */}
             {!isLoading && <FeaturedProducts />}
+
+            {/* {(!isLoading && recentProducts.length > 0) && 
+            <div style={{marginBottom: 50}}>
+                <SimilarProductsCarousel currentProduct={recentProducts} />
+            </div>} */}
 
             <FooterHome />
         </>

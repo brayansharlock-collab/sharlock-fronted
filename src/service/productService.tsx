@@ -40,7 +40,7 @@ export const productService = {
       };
 
       const queryParams = pageSize ? `?page_size=${pageSize}` : "";
-      const res = await api.post(`${API_URL_ALL.PRODUCTS}${queryParams}?page_size=${5}`, body);
+      const res = await api.post(`${API_URL_ALL.PRODUCTS}${queryParams}`, body);
 
       const data = res.data?.data?.results || [];
       const total = res.data?.data?.count || 0;
@@ -56,7 +56,7 @@ export const productService = {
     try {
 
       const query = `?page=${page}&page_size=${pageSize}`;
-      const res = await api.get(`${API_URL_ALL.PRODUCTS}${query}`);
+      const res = await api.get(`${API_URL_ALL.PRODUCTS_DISCOUNT}${query}`);
       return { data: res.data?.data?.results || [], total: res.data?.data?.count }
     } catch (error) {
       console.error("Error al obtener productos con descuento:", error);
