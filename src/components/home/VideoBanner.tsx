@@ -82,6 +82,7 @@ export default function VideoBanner() {
                     margin: "60px auto",
                     overflow: "hidden",
                     borderRadius: "32px",
+                      boxShadow: `0 0 60px 20px #988c73ff`,
                 }}
             >
                 <div
