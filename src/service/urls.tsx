@@ -29,6 +29,8 @@ export const API_URL_ALL = {
     RECIPIENT: "api/products/receipt/",
     GUIE: "api/products/get-distributor/",
 
+    PUBLICY: "api/accounts/video-banner/",
+
     BANNER: "api/accounts/banner/",
     GOOGLE: "api/accounts/api-token-auth-google/",
 }

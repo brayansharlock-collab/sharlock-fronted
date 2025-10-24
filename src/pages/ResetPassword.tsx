@@ -75,11 +75,7 @@ const ResetPassword: React.FC = () => {
     return (
         <div
             style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100vh',
-                position: 'relative',
+                display: "flex", alignItems: "center", justifyContent: "center", height: "100vh"
             }}
         >
             {contextHolder}

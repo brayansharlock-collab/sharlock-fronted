@@ -524,7 +524,7 @@ export const ProductsPage: React.FC = () => {
                         title="Filtros"
                         placement="left"
                         onClose={() => setDrawerVisible(false)}
-                        style={{ background: '#e5e1d7' }}
+                        style={{ background: "#e5e1d7", height: "100dvh" }}
                         open={drawerVisible}
                         width={280}
                     >
