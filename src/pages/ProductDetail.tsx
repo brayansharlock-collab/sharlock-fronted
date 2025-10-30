@@ -22,6 +22,7 @@ import { ViewCartButton } from "../components/ProductDetail/ViewCartButton"
 import { ProductDescriptionCard } from "../components/ProductDetail/ProductDescriptionCard"
 import { ProductComments } from "../components/ProductDetail/ProductComments"
 import SimilarProductsCarousel from "../components/ProductDetail/useSimilarProducts"
+import { tokenStorage } from "../utils/token"
 
 interface StockDetail {
   id: number
@@ -58,6 +59,12 @@ const ProductDetail = () => {
   const [messageApi, contextHolder] = message.useMessage()
   const [quantity, setQuantity] = useState<number>(1)
   const [loading, setLoading] = useState(false);
+  const [isLogged, setIsLogged] = useState(false)
+  const token = tokenStorage.getAccessToken()
+
+  useEffect(() => {
+    setIsLogged(!!token)
+  }, [])
 
   useEffect(() => {
     if (product) {
@@ -278,14 +285,14 @@ const ProductDetail = () => {
           </Col>
 
           {/* Carrusel móvil */}
-          <Col xs={24} sm={0}>
+          <Col xs={24 } sm={0}>
             <ProductImageGallery
               images={allImages}
               selectedImage={selectedImage}
               onImageSelect={setSelectedImage}
               isMobile={true}
             />
-            <Tooltip title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
+            <Tooltip title={!isLogged ? "Debes iniciar sesión para guardar favoritos" : isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
               <Button
                 style={{
                   position: "absolute",
@@ -296,7 +303,9 @@ const ProductDetail = () => {
                   background: "rgba(255, 255, 255, 0.7)",
                   border: "1px solid rgba(255, 255, 255, 0.5)",
                   transition: "all 0.2s ease",
+                  cursor: !isLogged ? "not-allowed" : "pointer",
                 }}
+                disabled={!isLogged}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -324,7 +333,7 @@ const ProductDetail = () => {
                   }}
                   preview={false}
                 />
-                <Tooltip title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
+                <Tooltip title={!isLogged ? "Debes iniciar sesión para guardar favoritos" : isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
                   <Button
                     style={{
                       position: "absolute",
@@ -334,8 +343,10 @@ const ProductDetail = () => {
                       backdropFilter: "blur(10px)",
                       background: "rgba(255, 255, 255, 0.7)",
                       border: "1px solid rgba(255, 255, 255, 0.5)",
+                      cursor: !isLogged ? "not-allowed" : "pointer",
                       transition: "all 0.2s ease",
                     }}
+                    disabled={!isLogged}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -383,7 +394,7 @@ const ProductDetail = () => {
               />
 
               <div style={{ display: "flex", gap: 16, marginTop: 24 }}>
-                <AddToCartButton onClick={handleAddToCart} disabled={!variant} />
+                <AddToCartButton onClick={handleAddToCart} quantity={variant?.quantity} disabled={variant?.quantity === 0 || !isLogged} />
                 <ViewCartButton />
               </div>
             </motion.div>
@@ -398,7 +409,7 @@ const ProductDetail = () => {
 
           <SimilarProductsCarousel currentProduct={product} />
 
-          <ProductComments productId={product.id} totalComent={product.total_comments} totalRating={product.average_rating}  />
+          <ProductComments productId={product.id} totalComent={product.total_comments} totalRating={product.average_rating} />
         </Row>
       </motion.div>
     </>

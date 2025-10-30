@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { FeaturedProducts } from "../components/home/featureproducts";
 import isotipo from "../assets/logos/isotipo.png";
 import VideoBanner from "../components/home/VideoBanner";
-// import SimilarProductsCarousel from "../components/ProductDetail/useSimilarProducts";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];

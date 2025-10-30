@@ -11,6 +11,7 @@ import { cartService } from "../service/cartService";
 import { isNewProduct } from "../utils/dateUtils";
 import { calculateDiscountPercent, getProductImages } from "../utils/productUtils";
 import FooterHome from "../components/ui/footerHome";
+import { useDebouncedCallback } from "use-debounce";
 
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -22,29 +23,36 @@ export const ProductsPage: React.FC = () => {
     const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [selectedFilters, setSelectedFilters] = useState<number[]>([]);
     const [subcategoryFilters, setSubcategoryFilters] = useState<any[]>([]);
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
     const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
 
-    const [loading, setLoading] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
     const loadingRef = useRef(false);
-
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [restored, setRestored] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
+    const [userChangedFilters, setUserChangedFilters] = useState(false);
+
+    const [derivedSubcategory, setDerivedSubcategory] = useState<number | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+    const [derivedCategory, setDerivedCategory] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [cartCount, setCartCount] = useState(2);
     const screens = useBreakpoint();
-    const lastFetchId = useRef(0);
-    const [userChangedFilters, setUserChangedFilters] = useState(false);
-    const [derivedCategory, setDerivedCategory] = useState<number | null>(null);
+
     const pageRef = useRef(1);
+    const lastFetchId = useRef(0);
 
     const displayedCategory = searchTerm ? (userChangedFilters ? selectedCategory : derivedCategory) : selectedCategory;
+    const displayedSubcategory = searchTerm ? (userChangedFilters ? selectedSubcategories[0] : derivedSubcategory) : selectedSubcategories[0];
 
-    // Recuperar filtros guardados al montar
+
+    const debouncedSetPrice = useDebouncedCallback((val: [number, number]) => {
+        setPriceRange(val);
+    }, 400);
+
     useEffect(() => {
         if (restored) return;
 
@@ -117,15 +125,6 @@ export const ProductsPage: React.FC = () => {
     }, [selectedCategory, categories]);
 
     const handleSelectSubcategory = async (subId: number) => {
-        if (selectedSubcategories.includes(subId)) {
-            setSelectedSubcategories([]);
-            setSubcategoryFilters([]);
-            setSelectedFilters([]);
-            setUserChangedFilters(true);
-            return;
-        }
-
-        // Si es una nueva selección, reemplazamos el array con este solo ID
         try {
             const data = await productService.subcategories(subId);
             setSubcategoryFilters(data.filter_name_detail || []);
@@ -135,7 +134,7 @@ export const ProductsPage: React.FC = () => {
         } catch (err) {
             console.error("Error cargando filtros de subcategoría:", err);
             setSubcategoryFilters([]);
-            setSelectedSubcategories([]); 
+            setSelectedSubcategories([]);
         }
     };
 
@@ -185,7 +184,6 @@ export const ProductsPage: React.FC = () => {
             setProducts(prev => {
                 const newProducts = append ? [...prev, ...results] : results;
 
-                // eliminar duplicados por ID (por si la API repite alguno)
                 const uniqueProducts = newProducts.filter(
                     (p, i, self) => i === self.findIndex(x => x.id === p.id)
                 );
@@ -202,6 +200,57 @@ export const ProductsPage: React.FC = () => {
 
                 return uniqueProducts;
             });
+
+            if (searchTerm && results.length > 0) {
+                const uniqueCategoryIds = Array.from(
+                    new Set(results.map((p: any) => p.subcategory?.category_detail?.id).filter(Boolean))
+                );
+
+                const uniqueSubCategoryIds = Array.from(
+                    new Set(results.map((p: any) => p.subcategory?.id).filter(Boolean))
+                );
+
+                const uniqueSubcatObjs = results
+                    .map((p: any) => p.subcategory)
+                    .filter(Boolean)
+                    .reduce((acc: any[], cur: any) => {
+                        if (!acc.some((s) => s.id === cur.id)) acc.push(cur);
+                        return acc;
+                    }, []);
+
+                const derivedCat = uniqueCategoryIds.length === 1 ? uniqueCategoryIds[0] : null;
+                const derivedSubcatId = uniqueSubcatObjs.length === 1 ? uniqueSubCategoryIds[0] : null;
+
+                setDerivedCategory(derivedCat);
+                setDerivedSubcategory(derivedSubcatId);
+
+                if (derivedCat) {
+                    const foundCat = categories.find((c) => c.id === derivedCat);
+                    if (foundCat) {
+                        setSubcategories(foundCat.sub_category || []);
+                    } else {
+                        setSubcategories(uniqueSubcatObjs);
+                    }
+                } else {
+                    setSubcategories(uniqueSubcatObjs);
+                }
+
+                // --- 🚀 Si solo hay una subcategoría y no hubo cambios manuales ---
+                if (derivedCat && derivedSubcatId && !userChangedFilters) {
+                    setSelectedCategory(derivedCat);
+                    setSelectedSubcategories([derivedSubcatId]);
+
+                    // Espera un ciclo de renderizado antes de ejecutar
+                    setTimeout(() => {
+                        handleSelectSubcategory(derivedSubcatId);
+                    }, 0);
+                }
+            } else {
+                setDerivedCategory(null);
+                setDerivedSubcategory(null);
+                if (!selectedCategory) setSubcategories([]);
+            }
+
 
         } catch (err) {
             if (currentFetchId !== lastFetchId.current) return;
@@ -248,7 +297,6 @@ export const ProductsPage: React.FC = () => {
         fetchProducts(false);
     }, [restored, selectedCategory, selectedSubcategories, selectedFilters, priceRange, searchTerm]);
 
-    // resetear filtros
     const resetFilters = () => {
         setSelectedCategory(null);
         setSelectedSubcategories([]);
@@ -267,6 +315,7 @@ export const ProductsPage: React.FC = () => {
 
         if (trimmed === "") {
             setDerivedCategory(null);
+            setDerivedSubcategory(null);
             setSelectedCategory(null);
             setSelectedSubcategories([]);
             setSelectedFilters([]);
@@ -274,6 +323,7 @@ export const ProductsPage: React.FC = () => {
         } else {
             setUserChangedFilters(false);
             setDerivedCategory(null);
+            setDerivedSubcategory(null);
         }
     };
 
@@ -295,6 +345,7 @@ export const ProductsPage: React.FC = () => {
 
                                 setUserChangedFilters(true);
                                 setDerivedCategory(null);
+                                setDerivedSubcategory(null);
                                 setSearchTerm("");
                             }}
                         >
@@ -322,6 +373,7 @@ export const ProductsPage: React.FC = () => {
                                     if (searchTerm) {
                                         setSearchTerm("");
                                         setDerivedCategory(null);
+                                        setDerivedSubcategory(null);
                                     }
 
                                     setUserChangedFilters(true);
@@ -341,10 +393,10 @@ export const ProductsPage: React.FC = () => {
             <Divider />
 
             <h2 style={{ marginBottom: 12 }}>Filtros</h2>
-            {subcategoryFilters.length > 0 ? (
+            {displayedSubcategory ? (
                 subcategoryFilters.map((filter) => (
                     <div key={filter.id} style={{ marginBottom: 8 }}>
-                          <h3 style={{ marginBottom: 12 }}>{filter.name}</h3>
+                        <h3 style={{ marginBottom: 12 }}>{filter.name}</h3>
                         <div style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
                             {filter.filter_option_detail.map((opt: any) => (
                                 <div key={opt.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
@@ -379,15 +431,23 @@ export const ProductsPage: React.FC = () => {
                     range
                     min={0}
                     max={5000000}
-                    step={100}
+                    step={100000}
                     value={priceRange}
                     onChange={(val) => {
-                        if (Array.isArray(val)) setPriceRange([val[0], val[1]]);
-                        else setPriceRange([val as number, priceRange[1]]);
+                        if (Array.isArray(val)) {
+                            const [min, max] = val;
+                            const roundedMin = Math.max(0, Math.round(min / 100000) * 100000);
+                            const roundedMax = Math.max(0, Math.round(max / 100000) * 100000);
+                            setPriceRange([roundedMin, roundedMax]);
+                            debouncedSetPrice([roundedMin, roundedMax]);
+                        }
                     }}
-                    tipFormatter={(value) =>
-                        (value || value === 0) ? Number(value).toLocaleString("es-CO", { minimumFractionDigits: 0 }) : ""
-                    }
+                    tooltip={{
+                        formatter: (value) =>
+                            value !== undefined
+                                ? `$ ${value.toLocaleString("es-CO", { minimumFractionDigits: 0 })}`
+                                : "",
+                    }}
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#666" }}>
                     <span>{priceRange[0].toLocaleString("es-CO")}</span>
@@ -412,6 +472,8 @@ export const ProductsPage: React.FC = () => {
                     background: "white",
                     position: "relative",
                     backgroundColor: "#ffffffdd",
+                    //    position: 'sticky', top: 0,
+                    //     background: '#20c5eadd',
                 }}
             >
                 <div
@@ -419,6 +481,7 @@ export const ProductsPage: React.FC = () => {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
+                     
                     }}
                 >
                     <Link to="/" style={{ textDecoration: "none" }}>
@@ -515,7 +578,7 @@ export const ProductsPage: React.FC = () => {
                 {screens.lg ? (
                     <Sider
                         width={250}
-                        style={{ position: 'sticky', top: 0, height: "100vh", background: '#fff', padding: 20, color: 'black', }}
+                        style={{ position: 'sticky', top: 0, height: "100vh", background: '#fff', padding: 20, color: 'black', overflowY: 'auto' }}
                     >
                         {FiltersContent}
                     </Sider>
@@ -546,7 +609,7 @@ export const ProductsPage: React.FC = () => {
                         padding: 0,
                     }}>
                         {loading ? (
-                            <div style={{ textAlign: "center",minHeight: "60vh", paddingTop: 60 }}>
+                            <div style={{ textAlign: "center", minHeight: "60vh", paddingTop: 60 }}>
                                 <Spin size="large" />
                             </div>
                         ) : (

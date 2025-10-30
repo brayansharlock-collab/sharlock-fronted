@@ -180,8 +180,8 @@ export default function Register() {
                 <motion.div variants={itemVariants} initial="hidden" animate="show" style={{ marginBottom: "1rem" }}>
                   <Text>Confirmar Email</Text>
                   <Input
-                    prefix={<UserOutlined />}
-                    placeholder="Usuario123"
+                    prefix={<MailOutlined />}
+                    placeholder="tu@ejemplo.com"
                     value={form.username}
                     onChange={(e) => handleChange("username", e.target.value)}
                     required

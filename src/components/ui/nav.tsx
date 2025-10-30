@@ -111,7 +111,7 @@ const AnimatedNav: React.FC = () => {
                             : 'translateX(-50%)',
                         originY: 0,
                     }}
-                    className="left-[6%] md:left-[0%] lg:left-0%]"
+                    className="left-[6%] md:left-[1.5%] lg:left-0%]"
                     variants={textVariants}
                     initial="entry"
                     animate={isScrolled ? "collapsed" : "initial"}

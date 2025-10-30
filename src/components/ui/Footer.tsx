@@ -40,7 +40,7 @@ export default function Footer() {
             Términos y Condiciones
           </a>
         </Text>
-        <Text>© {year} SHARLOCK</Text>
+        <p>© {year} SHARLOCK</p>
       </motion.div>
 
       {/* 🔹 Estilos responsive */}

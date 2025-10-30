@@ -335,7 +335,7 @@ export const ProductComments = ({
                                     style={{
                                         padding: "24px",
                                         borderRadius: "16px",
-                                        background: "linear-gradient(135deg, #ffffff, #f7faff)",
+                                        background: "linear-gradient(160deg, #ffffff, #e9e4da50)",
                                         border: "1px solid #eef0f6",
                                         boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
                                     }}
@@ -512,8 +512,6 @@ export const ProductComments = ({
                                                 </motion.div>
                                             )}
 
-
-                                            {/* Mostrar respuestas */}
                                             {/* Mostrar respuestas */}
                                             {item.replies?.length > 0 && (
                                                 <motion.div
@@ -534,7 +532,7 @@ export const ProductComments = ({
                                                         <div
                                                             key={reply.id}
                                                             style={{
-                                                                background: "#fafbff",
+                                                                background: "#ffffffff",
                                                                 borderRadius: "10px",
                                                                 padding: "10px 14px",
                                                                 border: "1px solid #f0f0f0",

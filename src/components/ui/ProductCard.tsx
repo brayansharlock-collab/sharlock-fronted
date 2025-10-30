@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, message, Tag, Tooltip } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeartFilled, HeartOutlined, StarOutlined } from "@ant-design/icons";
 import BadgeNuevo from "./Badge";
 import { productService } from "../../service/productService";
 import { Link } from "react-router-dom";
+import { tokenStorage } from "../../utils/token";
 
 interface ProductCardProps {
   id: number;
@@ -38,6 +39,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const allImages = [image, ...images].filter(Boolean) as string[];
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
+  const [isLogged, setIsLogged] = useState(false)
+  const token = tokenStorage.getAccessToken()
 
   const toggleFavorite = async () => {
     if (loading) return;
@@ -60,10 +63,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
+  useEffect(() => {
+    setIsLogged(!!token)
+  }, [])
+
   return (
     <Link
       to={`/producto/${name}/${id}`}
-      style={{ textDecoration: "none", color: "inherit", display: "block",  }}
+      style={{ textDecoration: "none", color: "inherit", display: "block", }}
     >
       <div
         key={id}
@@ -129,7 +136,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               <BadgeNuevo isNew={!isNew} />
             </AnimatePresence>
 
-            <Tooltip title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
+            <Tooltip title={!isLogged? "Debes iniciar sesión para guardar favoritos" : isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}>
               <Button
                 style={{
                   position: "absolute",
@@ -140,7 +147,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   background: "rgba(255, 255, 255, 0.7)",
                   border: "1px solid rgba(255, 255, 255, 0.5)",
                   transition: "all 0.2s ease",
+                  cursor: !isLogged ? "not-allowed" : "pointer",
                 }}
+                disabled={!isLogged}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

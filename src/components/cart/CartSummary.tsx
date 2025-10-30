@@ -38,7 +38,7 @@ export function CartSummary({
 }: Props) {
   const navigate = useNavigate();
 
-  const { subtotal, discount, iva, total } = useMemo(() => {
+  const { subtotal, discount, total, env } = useMemo(() => {
     const st = items.reduce((acc, it) => acc + it.price * it.quantity, 0);
     let disc = 0;
 
@@ -47,10 +47,15 @@ export function CartSummary({
     }
 
     const taxable = Math.max(st - disc, 0);
-    const iva19 = taxable * 0.19;
-    const tot = taxable + iva19;
+    const env = 15000;
 
-    return { subtotal: st, discount: disc, iva: iva19, total: tot };
+    let total = taxable;
+    if (taxable >= 200000) {
+      total += env;
+    }
+    const tot = total;
+
+    return { subtotal: st, discount: disc, total: tot, env };
   }, [items, appliedCoupon]);
 
   const handleApplyCoupon = async () => {
@@ -122,7 +127,12 @@ export function CartSummary({
         </Row>
         <Row justify="space-between" style={{ marginTop: 6 }}>
           <Text>IVA (19%)</Text>
-          <Text>{COP.format(iva)}</Text>
+        </Row>
+        <Row justify="space-between" style={{ marginTop: 6 }}>
+          <Text>Envio</Text>
+          <Text type={discount > 0 ? "success" : "secondary"}>
+            + {COP.format(env)}
+          </Text>
         </Row>
 
         <Divider style={{ margin: "12px 0" }} />
