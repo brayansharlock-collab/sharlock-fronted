@@ -65,7 +65,7 @@ export const ProductImageGallery = ({
               borderRadius: 8,
               cursor: "pointer",
               objectFit: "cover",
-              width: "100%",
+              width: "84%",
               pointerEvents: "none",
             }}
           />

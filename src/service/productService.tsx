@@ -27,6 +27,27 @@ const normalizeResults = (resData: any) => {
   return [];
 };
 
+export interface MediaItem {
+  file: File;
+  is_image: boolean;
+  order: number;
+}
+
+export interface StockItem {
+  size?: string;
+  color?: string;
+  quantity?: number;
+  media?: MediaItem[];
+}
+
+export interface ProductFormValues {
+  is_active: boolean;
+  name: string;
+  description?: string;
+  price: number;
+  subcategory: number;
+}
+
 export const productService = {
   list: async (filters: any = {}, page: number = 1, pageSize?: number) => {
     if (filters.favorite_product !== undefined) {
@@ -49,6 +70,48 @@ export const productService = {
     } catch (error) {
       console.error("Error al listar productos:", error);
       return { data: [], total: 0 };
+    }
+  },
+
+  createProductWithStocks: async (
+    values: ProductFormValues,
+    imageCover: { originFileObj: File } | null,
+    stocks: StockItem[],
+  ) => {
+    try {
+      const formData = new FormData();
+
+      // Campos principales del producto
+      formData.append("is_active", String(true));
+      formData.append("name", values.name);
+      formData.append("description", values.description || "");
+      formData.append("price", String(values.price));
+      formData.append("subcategory", String(values.subcategory));
+
+      // Imagen principal
+      if (imageCover) formData.append("image_cover", imageCover.originFileObj);
+
+      // Variantes / Stocks
+      stocks.forEach((s, i) => {
+        formData.append(`stocks[${i}].size`, s.size || "");
+        formData.append(`stocks[${i}].color`, s.color || "");
+        formData.append(`stocks[${i}].quantity`, String(s.quantity || 0));
+
+        s.media?.forEach((m: MediaItem, j: number) => {
+          formData.append(`stocks[${i}].media[${j}].file`, m.file);
+          formData.append(`stocks[${i}].media[${j}].is_image`, String(m.is_image));
+          formData.append(`stocks[${i}].media[${j}].order`, String(m.order));
+        });
+      });
+
+      const res = await api.post(API_URL_ALL.PRODUCTS_CREATE, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      return res.data;
+    } catch (error: any) {
+      console.error("❌ Error al crear producto:", error);
+      throw error;
     }
   },
 

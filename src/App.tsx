@@ -8,20 +8,22 @@ import ProtectedRoute from "./routers/ProtectedRoute";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import CartPage from './pages/CartPage';
-import ProcessPay from './pages/process.pay';
-// import AnimatedNav from './components/ui/nav';
-import ProfilePage from './pages/ProfilePage';
-import ProductDetail from './pages/ProductDetail';
 import Register from './pages/register';
+import ProcessPay from './pages/process.pay';
+import ProfilePage from './pages/ProfilePage';
+import ResetPassword from './pages/ResetPassword';
+import ProductDetail from './pages/ProductDetail';
 import { ProductsPage } from './pages/ProductsPage';
 import FinalStep from './components/processPay/SuccessStep';
 import RequestResetPassword from './pages/RequestResetPassword';
-import ResetPassword from './pages/ResetPassword';
+import ProductsPageAdmin from './pages/admin/page';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/admin/options" element={<ProductsPageAdmin />} />
+
         <Route path="/" element={<Home />} />
 
         <Route path="/login" element={<Login />} />

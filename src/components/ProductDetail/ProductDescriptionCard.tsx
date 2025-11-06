@@ -12,7 +12,6 @@ export const ProductDescriptionCard = ({ description, imageCover }: ProductDescr
   return (
     <motion.div
       style={{
-        // marginTop: 32,
         margin: "40px auto",
         width: "95%",
         height: 500,
@@ -35,8 +34,6 @@ export const ProductDescriptionCard = ({ description, imageCover }: ProductDescr
           <div
             style={{
               padding: "24px",
-              height: "320px",
-              overflowY: "auto",
             }}
           >
             <Title
@@ -55,6 +52,8 @@ export const ProductDescriptionCard = ({ description, imageCover }: ProductDescr
                 lineHeight: 1.7,
                 color: "#374151",
                 fontSize: "15px",
+                height: "46vh",
+                overflowY: "auto",
                 whiteSpace: "pre-line",
               }}
             >
@@ -92,7 +91,7 @@ export const ProductDescriptionCard = ({ description, imageCover }: ProductDescr
             style={{
               position: "absolute",
               top: 0,
-              left: -100,
+              left: -10,
               width: 200,
               height: "100%",
               background:

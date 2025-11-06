@@ -13,6 +13,7 @@ export const API_URL_ALL = {
 
     // Productos y categorías
     PRODUCTS: "/api/products/productos/",
+    PRODUCTS_CREATE: "/api/products/create/",
     CATEGORIES: "/api/products/categorias/",
     SUBCATEGORIES: "/api/products/sub-categorias/",
     FILTER_NAMES: "/api/products/nombre-filtros/",

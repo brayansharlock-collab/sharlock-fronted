@@ -12,8 +12,8 @@ import {
 } from "@ant-design/icons";
 import { Card, Button, Space, Grid, Tooltip } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
+import { getDecryptedCookie } from "../utils/encrypt";
 
-// Importar los componentes de cada sección
 import Silk from "../components/animations/Silk";
 import CardList from "../components/profile/CardList";
 import UserInfo from "../components/profile/UserInfo";
@@ -22,12 +22,15 @@ import FavoriteProducts from "../components/profile/FavoriteProducts";
 import OrderHistoryAdmin from "../components/profile/OrderHistoryAdmin";
 
 const { useBreakpoint } = Grid;
+const user = getDecryptedCookie("data")
 
 const menuItems = [
   { key: "user", label: "Tus datos", icon: <UserOutlined /> },
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
   { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
-  { key: "guie", label: "Administrar pedidos", icon: <SnippetsOutlined /> },
+  ...(user.role === "cliente"
+    ? [{ key: "guie", label: "Administrar pedidos", icon: <SnippetsOutlined /> }]
+    : []),
 ];
 
 export default function ProfilePage() {

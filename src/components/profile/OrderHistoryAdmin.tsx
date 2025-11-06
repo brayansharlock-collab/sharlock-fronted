@@ -73,7 +73,7 @@ export default function OrderHistoryAdmin() {
   const [selectedDistributor, setSelectedDistributor] = useState<number | null>(null);
   const [form] = Form.useForm();
 
-  const user = getDecryptedCookie("data")
+  const user = getDecryptedCookie("data");
 
   const loadOrders = async (fix_id_filter?: string) => {
     setLoading(true);

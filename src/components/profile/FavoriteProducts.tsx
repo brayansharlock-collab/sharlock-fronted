@@ -56,7 +56,7 @@ export default function FavoriteProducts() {
     setProducts([]);
     setHasMore(true);
     fetchFavorites();
-  }, [fetchFavorites]);
+  }, []);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
@@ -100,7 +100,6 @@ export default function FavoriteProducts() {
         Tus productos favoritos
       </Title>
 
-      {/* ❌ No necesitas containerRef aquí */}
       <div style={{ width: "100%" }}>
         <Row gutter={[16, 16]}>
           {products.map((p) => {
