@@ -285,7 +285,7 @@ const ProductDetail = () => {
           </Col>
 
           {/* Carrusel móvil */}
-          <Col xs={24 } sm={0}>
+          <Col xs={24} sm={0}>
             <ProductImageGallery
               images={allImages}
               selectedImage={selectedImage}
@@ -370,16 +370,16 @@ const ProductDetail = () => {
                 activeDiscount={product.active_discount}
               />
 
-              <ColorSelector
-                colors={allColors}
-                selectedColor={selectedColor}
-                onSelect={handleSelectColor}
-              />
-
               <SizeSelector
                 sizes={allSizes}
                 selectedSize={selectedSize}
                 onSelect={handleSelectSize}
+              />
+              
+              <ColorSelector
+                colors={allColors}
+                selectedColor={selectedColor}
+                onSelect={handleSelectColor}
               />
 
               <QuantitySelector

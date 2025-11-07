@@ -1,17 +1,19 @@
 "use client"
 
-import { Layout, Button, Menu, theme } from "antd"
+import { Layout, Button, Menu, theme, Tooltip } from "antd"
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     FileAddOutlined,
     AppstoreOutlined,
-    // SettingOutlined,
+    UserOutlined,
+    ArrowLeftOutlined,
 } from "@ant-design/icons"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import ProductForm from "./ProductForm"
 import OrderHistoryAdmin from "../../components/profile/OrderHistoryAdmin"
+import { Link } from "react-router-dom"
 
 // import constructionImg from "../../assets/ilustrations/undraw_construction-workers_z99i.svg"
 
@@ -124,10 +126,47 @@ export default function ProductsPage() {
                             fontSize: "20px",
                             fontWeight: 700,
                             color: "#1a1a1a",
+                            display: "flex", justifyContent: "space-between",
+                            alignItems: "center",
+                            width: "100%",
                         }}
                     >
                         {activeMenu === "create" && "Crear Nuevo Producto"}
                         {activeMenu === "Facturación" && "Historial de Pedidos"}
+                        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                            <Link to="/" >
+                            <button
+                                style={{
+                                    display: "flex",
+                                    gap: "8px",
+                                    transition: "all 0.3s ease",
+                                    outline: "none",
+                                    cursor: "pointer",
+                                    border: "none",
+                                    fontSize: "16px",
+                                    background: "transparent",
+                                    color: "#988c73ff",
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+                            >
+                                <ArrowLeftOutlined />
+                                Volver a home
+                            </button>
+                            </Link>
+                            <Tooltip title="Tu perfil">
+                                <Link to="/Profile">
+                                    <UserOutlined
+                                        style={{
+                                            fontSize: '22px',
+                                            color: '#000',
+                                            cursor: 'pointer',
+                                        }}
+                                    />
+                                </Link>
+                            </Tooltip>
+                        </div>
+
                     </motion.h2>
                 </Header>
 

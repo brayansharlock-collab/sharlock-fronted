@@ -74,7 +74,7 @@ const ProductStockForm = ({ index, value, onChange, onDelete }: Props) => {
             onMouseLeave={(e) => {
               e.currentTarget.style.color = "#999"
             }}
-             onClick={() => onDelete(index)} 
+            onClick={() => onDelete(index)}
           />
         }
       >
@@ -83,11 +83,13 @@ const ProductStockForm = ({ index, value, onChange, onDelete }: Props) => {
             placeholder="Talla (M, L, XL...)"
             value={value.size}
             onChange={(e) => handleInputChange("size", e.target.value)}
+            required
           />
           <Input
             placeholder="Color (Blanco, Negro...)"
             value={value.color}
             onChange={(e) => handleInputChange("color", e.target.value)}
+            required
           />
           <InputNumber
             placeholder="Cantidad"
@@ -95,11 +97,17 @@ const ProductStockForm = ({ index, value, onChange, onDelete }: Props) => {
             value={value.quantity}
             onChange={(val) => handleInputChange("quantity", val ?? 0)}
             style={{ width: "100%" }}
+            required
           />
         </div>
 
         <div style={{ marginTop: "16px" }}>
-          <Upload listType="picture-card" fileList={fileList} beforeUpload={() => false} onChange={handleMediaChange}>
+          <Upload
+            listType="picture-card"
+            fileList={fileList}
+            beforeUpload={() => false}
+            onChange={handleMediaChange}
+          >
             {fileList.length >= 4 ? null : (
               <div>
                 <PlusOutlined />
@@ -107,6 +115,11 @@ const ProductStockForm = ({ index, value, onChange, onDelete }: Props) => {
               </div>
             )}
           </Upload>
+          {fileList.length === 0 && (
+            <div style={{ color: "red", fontSize: 12 }}>
+              ⚠️ Debes subir al menos una imagen
+            </div>
+          )}
         </div>
       </Card>
     </motion.div>

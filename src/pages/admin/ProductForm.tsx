@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Form,
     Input,
@@ -44,6 +44,41 @@ const ProductForm = () => {
     const [imageCover, setImageCover] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
+    // ✅ NUEVOS ESTADOS
+    const [categories, setCategories] = useState<any[]>([]);
+    const [subcategories, setSubcategories] = useState<any[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+    // ✅ Cargar categorías
+    useEffect(() => {
+        (async () => {
+            try {
+                const cats = await productService.categories();
+                setCategories(Array.isArray(cats) ? cats : []);
+            } catch (err) {
+                console.error("Error categorías:", err);
+            }
+        })();
+    }, []);
+
+    // ✅ Cargar subcategorías según categoría seleccionada
+    useEffect(() => {
+        (async () => {
+            if (!selectedCategory) {
+                setSubcategories([]);
+                return;
+            }
+
+            try {
+                const selectedCat = categories.find((c) => c.id === selectedCategory);
+                setSubcategories(selectedCat?.sub_category || []);
+            } catch (err) {
+                console.error("Error subcategorías:", err);
+                setSubcategories([]);
+            }
+        })();
+    }, [selectedCategory, categories]);
+
     const handleAddStock = () => setStocks([...stocks, { media: [] }]);
 
     const handleStockChange = (index: number, updated: StockItem) => {
@@ -52,29 +87,70 @@ const ProductForm = () => {
         setStocks(newStocks);
     };
 
+    const handleDeleteStock = (index: number) => {
+        const updatedStocks = stocks.filter((_, i) => i !== index);
+        setStocks(updatedStocks);
+    };
+
+    const [messageApi, contextHolder] = message.useMessage();
 
     const handleSubmit = async (values: ProductFormValues) => {
-        setLoading(true)
+        if (!imageCover) {
+            messageApi.open({
+                type: 'error',
+                content: '❌ Debes subir una imagen principal del producto',
+            });
+            return;
+        }
+
+        if (stocks.length === 0) {
+            messageApi.open({
+                type: 'error',
+                content: '❌ Debes añadir al menos una variante de producto',
+            });
+            return;
+        }
+
+        for (const [i, stock] of stocks.entries()) {
+            if (!stock.size || !stock.color || !stock.quantity) {
+                messageApi.open({
+                    type: 'warning',
+                    content: `⚠️ Completa todos los campos en la variante #${i + 1}`,
+                });
+                return;
+            }
+            if (!stock.media || stock.media.length === 0) {
+                messageApi.open({
+                    type: 'warning',
+                    content: `⚠️ Debes subir al menos una imagen en la variante #${i + 1}`,
+                });
+                return;
+            }
+        }
+
+        setLoading(true);
 
         try {
-            await productService.createProductWithStocks(values, imageCover, stocks)
-            message.success("✅ Producto creado correctamente")
+            await productService.createProductWithStocks(values, imageCover, stocks);
 
-            form.resetFields()
-            setStocks([])
-            setImageCover(null)
+            messageApi.open({
+                type: 'success',
+                content: '✅ Producto creado correctamente',
+            });
+
+            form.resetFields();
+            setStocks([]);
+            setImageCover(null);
         } catch (error) {
-            console.error(error)
-            message.error("❌ Error al crear el producto")
+            console.error(error);
+            messageApi.open({
+                type: 'error',
+                content: '❌ Error al crear el producto',
+            });
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
-
-    const handleDeleteStock = (index: number) => {
-        const updatedStocks = stocks.filter((_, i) => i !== index)
-        setStocks(updatedStocks)
-    }
+    };
 
     return (
         <motion.div
@@ -86,11 +162,8 @@ const ProductForm = () => {
                 padding: "40px 20px",
             }}
         >
-            <Card
-                style={{
-                    borderRadius: 20,
-                }}
-            >
+            {contextHolder}
+            <Card style={{ borderRadius: 20 }}>
                 <Form
                     form={form}
                     layout="vertical"
@@ -98,17 +171,6 @@ const ProductForm = () => {
                     style={{ marginTop: 10 }}
                 >
                     <Row gutter={24}>
-                        {/* <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Activo"
-                                name="is_active"
-                                valuePropName="checked"
-                                tooltip="Activa o desactiva el producto en el catálogo"
-                            >
-                                <Switch defaultChecked />
-                            </Form.Item>
-                        </Col> */}
-
                         <Col xs={24} md={12}>
                             <Form.Item
                                 label="Nombre del producto"
@@ -135,7 +197,11 @@ const ProductForm = () => {
                         </Col>
 
                         <Col span={24}>
-                            <Form.Item label="Descripción" name="description">
+                            <Form.Item
+                                label="Descripción"
+                                name="description"
+                                rules={[{ required: true, message: "La descripción es obligatoria" }]}
+                            >
                                 <Input.TextArea
                                     rows={13}
                                     placeholder="Describe brevemente el producto..."
@@ -143,6 +209,25 @@ const ProductForm = () => {
                             </Form.Item>
                         </Col>
 
+                        {/* ✅ Select de Categoría */}
+                        <Col xs={24} md={12}>
+                            <Form.Item
+                                label="Categoría"
+                                name="category"
+                                rules={[{ required: true, message: "Selecciona una categoría" }]}
+                            >
+                                <Select
+                                    placeholder="Selecciona una categoría"
+                                    options={categories.map((cat) => ({
+                                        label: cat.name,
+                                        value: cat.id,
+                                    }))}
+                                    onChange={(val) => setSelectedCategory(val)}
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        {/* ✅ Select dependiente de Subcategoría */}
                         <Col xs={24} md={12}>
                             <Form.Item
                                 label="Subcategoría"
@@ -150,17 +235,22 @@ const ProductForm = () => {
                                 rules={[{ required: true, message: "Selecciona una subcategoría" }]}
                             >
                                 <Select
-                                    placeholder="Selecciona una opción"
-                                    options={[
-                                        { label: "Ropa", value: 3 },
-                                        { label: "Accesorios", value: 4 },
-                                    ]}
+                                    placeholder={
+                                        selectedCategory
+                                            ? "Selecciona una subcategoría"
+                                            : "Selecciona una categoría primero"
+                                    }
+                                    disabled={!selectedCategory}
+                                    options={subcategories.map((sub: any) => ({
+                                        label: sub.name,
+                                        value: sub.id,
+                                    }))}
                                 />
                             </Form.Item>
                         </Col>
 
                         <Col span={24}>
-                            <Form.Item label="Imagen principal del producto">
+                            <Form.Item label="Imagen principal del producto" required>
                                 <Upload
                                     listType="picture-card"
                                     beforeUpload={() => false}
@@ -174,6 +264,11 @@ const ProductForm = () => {
                                         </div>
                                     )}
                                 </Upload>
+                                {!imageCover && (
+                                    <div style={{ color: "red", fontSize: 12 }}>
+                                        ⚠️ La imagen principal es obligatoria
+                                    </div>
+                                )}
                             </Form.Item>
                         </Col>
                     </Row>

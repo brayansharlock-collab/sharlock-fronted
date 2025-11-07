@@ -1,15 +1,17 @@
-import { Badge } from 'antd';
+import { Badge, Tooltip } from 'antd';
 import { motion } from 'framer-motion';
 import { useScroll } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-import { SearchOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { ApartmentOutlined, SearchOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { cartService } from '../../service/cartService';
+import { getDecryptedCookie } from '../../utils/encrypt';
 
 const AnimatedNav: React.FC = () => {
     const location = useLocation();
     const isHome = location.pathname === '/';
+    const user = getDecryptedCookie("data");
 
     const { scrollY } = useScroll();
     const [cartCount, setCartCount] = useState(0);
@@ -129,28 +131,47 @@ const AnimatedNav: React.FC = () => {
                     transition={{ duration: 0.5 }}
                     style={{ display: 'flex', alignItems: 'center', gap: '20px' }}
                 >
-                    <Link to="/Profile" >
-                        {isHome && (
-                            <UserOutlined
-                                style={{
-                                    fontSize: '22px',
-                                    color: isScrolled ? '#000' : '#fff',
-                                    cursor: 'pointer',
-                                }}
-                            />
-                        )}
-                    </Link>
-                    <Link to="/CarPage">
-                        <Badge count={cartCount} size="small">
-                            <ShoppingCartOutlined
-                                style={{
-                                    fontSize: '22px',
-                                    color: isScrolled ? '#000' : '#fff',
-                                    cursor: 'pointer',
-                                }}
-                            />
-                        </Badge>
-                    </Link>
+                    {user.role === "administrador" && (
+                        <Tooltip title="Ir a la página de administración">
+                            <Link to="/admin/options" >
+                                <ApartmentOutlined
+                                    style={{
+                                        fontSize: '22px',
+                                        color: isScrolled ? '#000' : '#fff',
+                                        cursor: 'pointer',
+                                    }}
+                                />
+                            </Link>
+                        </Tooltip>
+                    )}
+
+                    <Tooltip title="Tu perfil">
+                        <Link to="/Profile">
+                            {isHome && (
+                                <UserOutlined
+                                    style={{
+                                        fontSize: '22px',
+                                        color: isScrolled ? '#000' : '#fff',
+                                        cursor: 'pointer',
+                                    }}
+                                />
+                            )}
+                        </Link>
+                    </Tooltip>
+                    <Tooltip title="Tu Carrito">
+                        <Link to="/CarPage">
+                            <Badge count={cartCount} size="small">
+                                <ShoppingCartOutlined
+                                    style={{
+                                        fontSize: '22px',
+                                        color: isScrolled ? '#000' : '#fff',
+                                        cursor: 'pointer',
+                                    }}
+                                />
+                            </Badge>
+                        </Link>
+                    </Tooltip>
+
                 </motion.div>
 
             </motion.nav>) : (null
