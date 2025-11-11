@@ -12,15 +12,14 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    // allowedHosts: [
-    //   'sharlockstore.com',
-    //   'avowedly-travellable-meta.ngrok-free.dev',
-    // ],
-    // hmr: {
-    //   host: 'sharlockstore.com', 
-    //   protocol: 'wss',
-    //   clientPort: 443 
-    // },
+    allowedHosts: [
+      'sharlockstore.com',
+    ],
+    hmr: {
+      host: 'sharlockstore.com', 
+      protocol: 'wss',
+      clientPort: 443 
+    },
   },
 
 })
