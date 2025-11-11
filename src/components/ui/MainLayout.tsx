@@ -43,15 +43,12 @@ export default function MainLayout({ children }: { children: ReactNode }) {
           >
             <FloatButton
               onClick={scrollToTop}
-              tooltip="Volver al inicio"
               icon={<UpOutlined />}
-              // 👇 Desactiva el hover/scale y transiciones molestas
               style={{
                 transform: 'none !important',
                 transition: 'none !important',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)', // opcional: sombra suave fija
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               }}
-              // 👇 También desactiva el efecto de foco si lo deseas
               className="float-button-no-hover"
             />
           </motion.div>
