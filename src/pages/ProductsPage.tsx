@@ -23,7 +23,7 @@ export const ProductsPage: React.FC = () => {
     const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [selectedFilters, setSelectedFilters] = useState<number[]>([]);
     const [subcategoryFilters, setSubcategoryFilters] = useState<any[]>([]);
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
     const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
 
     const loadingRef = useRef(false);
@@ -301,7 +301,7 @@ export const ProductsPage: React.FC = () => {
         setSelectedCategory(null);
         setSelectedSubcategories([]);
         setSelectedFilters([]);
-        setPriceRange([0, 1000000]);
+        setPriceRange([0, 10000000]);
         setSearchTerm("");
         setSubcategoryFilters([]);
         setUserChangedFilters(false);
@@ -430,8 +430,8 @@ export const ProductsPage: React.FC = () => {
                 <Slider
                     range
                     min={0}
-                    max={5000000}
-                    step={100000}
+                    max={10000000}
+                    step={50000}
                     value={priceRange}
                     onChange={(val) => {
                         if (Array.isArray(val)) {
@@ -670,7 +670,6 @@ export const ProductsPage: React.FC = () => {
                     </div>
                 </div>
             </Layout>
-
         </Layout>
     );
 };

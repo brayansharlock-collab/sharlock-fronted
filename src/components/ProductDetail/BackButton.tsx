@@ -1,32 +1,36 @@
-"use client"
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import type { ButtonHTMLAttributes } from "react";
 
-import { Link } from "react-router-dom"
-import { ArrowLeftOutlined } from "@ant-design/icons"
+export const BackButton = (props: ButtonHTMLAttributes<HTMLButtonElement>) => {
+  const navigate = useNavigate();
 
-// interface BackButtonProps extends any:[]<HTMLButtonElement> {}
+  const handleClick = () => {
+    navigate("/products");
+  };
 
-export const BackButton = ({ ...props }: any) => {
   return (
-    <Link to="/products" style={{ textDecoration: 'none' }}>
-      <button
-        {...props}
-        style={{
-          display: "flex",
-          gap: "8px",
-          transition: "all 0.3s ease",
-          outline: "none",
-          cursor: "pointer",
-          border: "none",
-          background: "transparent",
-          color: "#988c73ff",
-          ...props.style,
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
-        onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
-      >
-        <ArrowLeftOutlined />
-        Volver a Productos
-      </button>
-    </Link>
-  )
-}
+    <button
+      {...props}
+      onClick={handleClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        transition: "all 0.3s ease",
+        outline: "none",
+        cursor: "pointer",
+        border: "none",
+        background: "transparent",
+        color: "#988c73ff",
+        textDecoration: "none",
+        ...props.style,
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+    >
+      <ArrowLeftOutlined />
+      Volver a Productos
+    </button>
+  );
+};

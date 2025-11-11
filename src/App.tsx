@@ -19,15 +19,16 @@ import RequestResetPassword from './pages/RequestResetPassword';
 import ProductsPageAdmin from './pages/admin/page';
 import NotFoundPage from './pages/NotFoundPage';
 import PublicRoute from './routers/PublicRoute';
+import MainLayout from './components/ui/MainLayout';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<MainLayout><Home /></MainLayout>} />
         <Route path="/*" element={<NotFoundPage />} />
 
-        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products" element={<MainLayout><ProductsPage /></MainLayout>} />
         <Route path="/producto/:slug/:id" element={<ProductDetail />} />
         <Route path="/Checkout/:contentdisplay" element={<FinalStep />} />
 
