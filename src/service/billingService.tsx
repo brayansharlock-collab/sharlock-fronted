@@ -39,8 +39,8 @@ export const billingService = {
       const payload: Record<string, any> = {
         is_active: true,
         shopping_cart: cartIds,
-        iva: 9,
-        shipment_cost: 0,
+        iva: 19,
+        shipment_cost: 15000,
         total: numericTotal,
       };
 

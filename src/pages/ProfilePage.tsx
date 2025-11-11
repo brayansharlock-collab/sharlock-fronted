@@ -28,7 +28,7 @@ const menuItems = [
   { key: "user", label: "Tus datos", icon: <UserOutlined /> },
   { key: "address", label: "Mis direcciones", icon: <HomeOutlined /> },
   { key: "favorites", label: "Favoritos", icon: <HeartOutlined /> },
-  ...(user.role === "cliente"
+  ...(user?.role === 3
     ? [{ key: "guie", label: "Administrar pedidos", icon: <SnippetsOutlined /> }]
     : []),
 ];

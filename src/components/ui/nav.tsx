@@ -131,7 +131,7 @@ const AnimatedNav: React.FC = () => {
                     transition={{ duration: 0.5 }}
                     style={{ display: 'flex', alignItems: 'center', gap: '20px' }}
                 >
-                    {user.role === "administrador" && (
+                    {user?.role === 1 && (
                         <Tooltip title="Ir a la página de administración">
                             <Link to="/admin/options" >
                                 <ApartmentOutlined

@@ -39,19 +39,20 @@ export const authService = {
       tokenStorage.setRefreshToken(data.refresh);
     }
 
-    const user = data.user;
-    const userRole = user.roll?.[0]?.name || "Sin rol";
+   const { roll, ...userWithoutRole } = data.user;
+   
+    const userRole = roll?.[0]?.fix_id || "Sin rol";
 
     const userData = {
-      id: user.id,
-      email: user.email,
-      full_name: user.full_name,
+      id: userWithoutRole.id,
+      email: userWithoutRole.email,
+      full_name: userWithoutRole.full_name,
       role: userRole,
     };
 
     setEncryptedCookie("data", userData, 4);
 
-    return user;
+    return userWithoutRole;
   },
 
   logout: () => {

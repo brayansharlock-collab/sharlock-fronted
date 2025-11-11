@@ -247,7 +247,7 @@ export default function OrderHistoryAdmin() {
                     </p>
                   )}
 
-                  {(order.fix_id === 2 && user.role === "gia") && (
+                  {(order.fix_id === 2 && user?.role === 1) && (
                     <Button
                       type="dashed"
                       style={{

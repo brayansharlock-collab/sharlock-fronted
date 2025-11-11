@@ -17,17 +17,16 @@ import { ProductsPage } from './pages/ProductsPage';
 import FinalStep from './components/processPay/SuccessStep';
 import RequestResetPassword from './pages/RequestResetPassword';
 import ProductsPageAdmin from './pages/admin/page';
+import NotFoundPage from './pages/NotFoundPage';
+import PublicRoute from './routers/PublicRoute';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/admin/options" element={<ProductsPageAdmin />} />
-
         <Route path="/" element={<Home />} />
+        <Route path="/*" element={<NotFoundPage />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/producto/:slug/:id" element={<ProductDetail />} />
         <Route path="/Checkout/:contentdisplay" element={<FinalStep />} />
@@ -35,6 +34,10 @@ function App() {
         <Route path="/forgot-password" element={<RequestResetPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+        <Route path="/admin/options" element={<ProtectedRoute><ProductsPageAdmin /></ProtectedRoute>} />
         <Route
           path="/Checkout"
           element={
