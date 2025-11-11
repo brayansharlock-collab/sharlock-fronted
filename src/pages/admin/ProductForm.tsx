@@ -44,12 +44,10 @@ const ProductForm = () => {
     const [imageCover, setImageCover] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
-    // ✅ NUEVOS ESTADOS
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
-    // ✅ Cargar categorías
     useEffect(() => {
         (async () => {
             try {
@@ -61,7 +59,6 @@ const ProductForm = () => {
         })();
     }, []);
 
-    // ✅ Cargar subcategorías según categoría seleccionada
     useEffect(() => {
         (async () => {
             if (!selectedCategory) {
@@ -98,7 +95,7 @@ const ProductForm = () => {
         if (!imageCover) {
             messageApi.open({
                 type: 'error',
-                content: '❌ Debes subir una imagen principal del producto',
+                content: 'Debes subir una imagen principal del producto',
             });
             return;
         }
@@ -106,7 +103,7 @@ const ProductForm = () => {
         if (stocks.length === 0) {
             messageApi.open({
                 type: 'error',
-                content: '❌ Debes añadir al menos una variante de producto',
+                content: 'Debes añadir al menos una variante de producto',
             });
             return;
         }
@@ -115,14 +112,14 @@ const ProductForm = () => {
             if (!stock.size || !stock.color || !stock.quantity) {
                 messageApi.open({
                     type: 'warning',
-                    content: `⚠️ Completa todos los campos en la variante #${i + 1}`,
+                    content: `Completa todos los campos en la variante #${i + 1}`,
                 });
                 return;
             }
             if (!stock.media || stock.media.length === 0) {
                 messageApi.open({
                     type: 'warning',
-                    content: `⚠️ Debes subir al menos una imagen en la variante #${i + 1}`,
+                    content: `Debes subir al menos una imagen en la variante #${i + 1}`,
                 });
                 return;
             }
@@ -135,7 +132,7 @@ const ProductForm = () => {
 
             messageApi.open({
                 type: 'success',
-                content: '✅ Producto creado correctamente',
+                content: 'Producto creado correctamente',
             });
 
             form.resetFields();
@@ -145,7 +142,7 @@ const ProductForm = () => {
             console.error(error);
             messageApi.open({
                 type: 'error',
-                content: '❌ Error al crear el producto',
+                content: 'Error al crear el producto',
             });
         } finally {
             setLoading(false);
@@ -209,7 +206,6 @@ const ProductForm = () => {
                             </Form.Item>
                         </Col>
 
-                        {/* ✅ Select de Categoría */}
                         <Col xs={24} md={12}>
                             <Form.Item
                                 label="Categoría"
@@ -227,7 +223,6 @@ const ProductForm = () => {
                             </Form.Item>
                         </Col>
 
-                        {/* ✅ Select dependiente de Subcategoría */}
                         <Col xs={24} md={12}>
                             <Form.Item
                                 label="Subcategoría"
