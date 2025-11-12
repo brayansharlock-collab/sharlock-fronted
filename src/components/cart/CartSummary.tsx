@@ -46,12 +46,12 @@ export function CartSummary({
       disc = (st * appliedCoupon.percentage) / 100;
     }
 
-    const taxable = Math.max(st - disc, 0);
     const env = 15000;
+    const taxable = Math.max(st - disc + env, 0);
 
     let total = taxable;
     if (taxable >= 200000) {
-      total += env;
+      total -= env;
     }
     const tot = total;
 
@@ -130,8 +130,11 @@ export function CartSummary({
         </Row>
         <Row justify="space-between" style={{ marginTop: 6 }}>
           <Text>Envio</Text>
-          <Text type={discount > 0 ? "success" : "secondary"}>
+          <Text type="secondary" style={{ display: total >= 200000 ? "none" : "flex" }}>
             + {COP.format(env)}
+          </Text>
+          <Text type="success" style={{ display: total >= 200000 ? "flex" : "none" }}>
+            {total >= 200000 && "Gratis por compra mayor a $200.000"}
           </Text>
         </Row>
 
