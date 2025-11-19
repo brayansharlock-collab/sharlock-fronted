@@ -32,8 +32,8 @@ function App() {
         <Route path="/producto/:slug/:id" element={<ProductDetail />} />
         <Route path="/Checkout/:contentdisplay" element={<FinalStep />} />
 
-        <Route path="/forgot-password" element={<RequestResetPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<MainLayout><RequestResetPassword /></MainLayout>} />
+        <Route path="/reset-password" element={<MainLayout><ResetPassword /></MainLayout>} />
 
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
