@@ -140,7 +140,6 @@ export default function AddressList() {
                         width: 52,
                         height: 52,
                         borderRadius: "50%",
-                        background: "linear-gradient(135deg, #ffffffff, #d4cabeff, #7a6449)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -153,7 +152,7 @@ export default function AddressList() {
 
                     <div style={{ flex: 1 }}>
                       <Space wrap>
-                        <Tag color="#7a644983">
+                        <Tag>
                           <StarFilled style={{ marginRight: 6 }} />
                           {addr.type_of_address?.name ?? "Casa"}
                         </Tag>
@@ -206,21 +205,62 @@ export default function AddressList() {
       )}
 
       <Modal
-        title={editing ? "Editar Dirección" : "Nueva Dirección"}
+        title={editing ?
+          <div style={{
+            fontSize: 20,
+            fontWeight: 700,
+            paddingBottom: 10,
+            borderBottom: "1px solid #f0f0f0"
+          }}>Editar Dirección</div>
+          : <div style={{
+            fontSize: 20,
+            fontWeight: 700,
+            paddingBottom: 10,
+            borderBottom: "1px solid #f0f0f0"
+          }}>Nueva Dirección</div>}
         open={open}
         onCancel={() => setOpen(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setOpen(false)}>
-            Cancelar
-          </Button>,
-          <Button key="save" type="primary" onClick={handleSave}>
-            Guardar
-          </Button>,
-        ]}
+        centered
+        width={720}
+        styles={{
+          body: {
+            padding: "24px 28px",
+            background: "linear-gradient(to bottom right, #ffffff, #f8fafc)",
+            borderRadius: 12,
+          },
+          content: {
+            borderRadius: 12,
+          },
+        }}
+        footer={
+          <div style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 12,
+            padding: "16px 20px",
+            borderTop: "1px solid #f0f0f0",
+          }}>
+            <Button onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleSave}
+              style={{ padding: "6px 18px" }}
+            >
+              Guardar
+            </Button>
+          </div>
+        }
       >
-        <Form form={form} layout="vertical">
-          <Row gutter={12}>
-            {/* Campos de texto básicos */}
+        <Form
+          form={form}
+          layout="vertical"
+          style={{
+            marginTop: 6
+          }}
+        >
+          <Row gutter={[18, 14]}>
             {[
               { name: "address", label: "Dirección", required: true },
               { name: "telephone_number", label: "Teléfono" },
@@ -232,10 +272,20 @@ export default function AddressList() {
               <Col span={12} key={f.name}>
                 <Form.Item
                   name={f.name}
-                  label={f.label}
-                  rules={f.required ? [{ required: true, message: `Ingrese ${f.label}` }] : []}
+                  label={<span style={{ fontWeight: 600 }}>{f.label}</span>}
+                  rules={
+                    f.required
+                      ? [{ required: true, message: `Ingrese ${f.label.toLowerCase()}` }]
+                      : []
+                  }
                 >
-                  <Input />
+                  <Input
+                    placeholder={`Escribe ${f.label.toLowerCase()}`}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 8
+                    }}
+                  />
                 </Form.Item>
               </Col>
             ))}
@@ -244,12 +294,13 @@ export default function AddressList() {
             <Col span={12}>
               <Form.Item
                 name="department"
-                label="Departamento"
-                rules={[{ required: true, message: "Seleccione un departamento" }]}
+                label={<span style={{ fontWeight: 600 }}>Departamento</span>}
+                rules={[{ required: true }]}
               >
                 <Select
                   placeholder="Seleccione un departamento"
                   onChange={handleDepartmentChange}
+                  style={{ borderRadius: 8, height: 45}}
                 >
                   {departments.map((d) => (
                     <Option key={d.id} value={d.id}>
@@ -264,10 +315,13 @@ export default function AddressList() {
             <Col span={12}>
               <Form.Item
                 name="city"
-                label="Ciudad"
-                rules={[{ required: true, message: "Seleccione una ciudad" }]}
+                label={<span style={{ fontWeight: 600 }}>Ciudad</span>}
+                rules={[{ required: true }]}
               >
-                <Select placeholder="Seleccione una ciudad">
+                <Select
+                  placeholder="Seleccione una ciudad"
+                  style={{ borderRadius: 8, height: 45 }}
+                >
                   {cities.map((c) => (
                     <Option key={c.id} value={c.id}>
                       {c.name}
@@ -281,10 +335,10 @@ export default function AddressList() {
             <Col span={12}>
               <Form.Item
                 name="type_of_address"
-                label="Tipo de Dirección"
-                rules={[{ required: true, message: "Seleccione el tipo de dirección" }]}
+                label={<span style={{ fontWeight: 600 }}>Tipo de Dirección</span>}
+                rules={[{ required: true }]}
               >
-                <Select placeholder="Seleccione un tipo">
+                <Select style={{ borderRadius: 8, height: 45 }}>
                   {addressTypes.map((t) => (
                     <Option key={t.id} value={t.id}>
                       {t.name}
@@ -294,11 +348,11 @@ export default function AddressList() {
               </Form.Item>
             </Col>
 
-            {/* Dirección principal */}
+            {/* Switch principal */}
             <Col span={12}>
               <Form.Item
                 name="is_principal"
-                label="¿Quieres que sea principal?"
+                label={<span style={{ fontWeight: 600 }}>¿Principal?</span>}
                 valuePropName="checked"
               >
                 <Switch />
@@ -306,8 +360,7 @@ export default function AddressList() {
             </Col>
           </Row>
         </Form>
-      </Modal>
-
+      </Modal >
     </>
   );
 }

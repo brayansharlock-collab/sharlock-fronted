@@ -91,13 +91,15 @@ export default function AddressFormModal({ open, onClose, onSaved }: AddressForm
       onCancel={onClose}
       centered
       width={720}
-      style={{
-        borderRadius: 12,
-      }}
-      bodyStyle={{
-        padding: "24px 28px",
-        background: "linear-gradient(to bottom right, #ffffff, #f8fafc)",
-        borderRadius: 12,
+      styles={{
+        body: {
+          padding: "24px 28px",
+          background: "linear-gradient(to bottom right, #ffffff, #f8fafc)",
+          borderRadius: 12,
+        },
+        content: {
+          borderRadius: 12,
+        },
       }}
       footer={
         <div style={{
@@ -106,8 +108,6 @@ export default function AddressFormModal({ open, onClose, onSaved }: AddressForm
           gap: 12,
           padding: "16px 20px",
           borderTop: "1px solid #f0f0f0",
-          background: "#fafafa",
-          borderRadius: "0 0 12px 12px"
         }}>
           <Button onClick={onClose}>
             Cancelar
@@ -170,7 +170,7 @@ export default function AddressFormModal({ open, onClose, onSaved }: AddressForm
               <Select
                 placeholder="Seleccione un departamento"
                 onChange={handleDepartmentChange}
-                style={{ borderRadius: 8 }}
+                style={{ borderRadius: 8, height: 45 }}
               >
                 {departments.map((d) => (
                   <Option key={d.id} value={d.id}>
@@ -190,7 +190,7 @@ export default function AddressFormModal({ open, onClose, onSaved }: AddressForm
             >
               <Select
                 placeholder="Seleccione una ciudad"
-                style={{ borderRadius: 8 }}
+                style={{ borderRadius: 8, height: 45 }}
               >
                 {cities.map((c) => (
                   <Option key={c.id} value={c.id}>
@@ -208,7 +208,7 @@ export default function AddressFormModal({ open, onClose, onSaved }: AddressForm
               label={<span style={{ fontWeight: 600 }}>Tipo de Dirección</span>}
               rules={[{ required: true }]}
             >
-              <Select style={{ borderRadius: 8 }}>
+              <Select style={{ borderRadius: 8, height: 45 }}>
                 {addressTypes.map((t) => (
                   <Option key={t.id} value={t.id}>
                     {t.name}
@@ -231,5 +231,6 @@ export default function AddressFormModal({ open, onClose, onSaved }: AddressForm
         </Row>
       </Form>
     </Modal>
+
   );
 }

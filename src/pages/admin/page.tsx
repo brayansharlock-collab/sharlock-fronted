@@ -124,7 +124,6 @@ export default function ProductsPage() {
                         style={{
                             margin: 0,
                             fontSize: "20px",
-                            fontWeight: 700,
                             color: "#1a1a1a",
                             display: "flex", justifyContent: "space-between",
                             alignItems: "center",
@@ -158,9 +157,9 @@ export default function ProductsPage() {
                                 <Link to="/Profile">
                                     <UserOutlined
                                         style={{
-                                            fontSize: '22px',
-                                            color: '#000',
-                                            cursor: 'pointer',
+                                            fontSize: "22px",
+                                            color: "#000",
+                                            cursor: "pointer",
                                         }}
                                     />
                                 </Link>

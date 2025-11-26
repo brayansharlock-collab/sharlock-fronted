@@ -47,13 +47,17 @@ export default function AddressStep({ checkoutData, setCheckoutData }: any) {
 
   return (
     <>
+      <Text strong>Selecciona tu dirección de envío</Text>
       <List
-        header={<Text strong>Selecciona tu dirección de envío</Text>}
         loading={loading}
         dataSource={addresses}
+        style={{
+          height: "30vh",
+          overflowY: "auto",
+        }}
         renderItem={(item) => {
-          const isSelected = 
-            checkoutData.selectedAddress?.id != null && 
+          const isSelected =
+            checkoutData.selectedAddress?.id != null &&
             String(checkoutData.selectedAddress.id) === String(item.id);
 
           return (
@@ -74,8 +78,8 @@ export default function AddressStep({ checkoutData, setCheckoutData }: any) {
         }}
       />
 
-      <Button 
-        type="link" 
+      <Button
+        type="link"
         style={{ marginTop: "1rem", color: "#7a6449" }}
         onClick={() => setModalOpen(true)}
       >

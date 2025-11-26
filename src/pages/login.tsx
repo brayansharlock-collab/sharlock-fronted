@@ -17,6 +17,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { authService } from "../service/authService";
 import SharlockLogo from "../components/ui/SharlockLogo";
 import { googleAuthService } from "../service/googleAuthService";
+import { setEncryptedCookie } from "../utils/encrypt";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -44,8 +45,22 @@ export default function Login() {
       setLoading(true);
       setError("");
       try {
-        const userData = await googleAuthService.loginWithGoogleAccessToken(tokenResponse.access_token);
+        const data = await googleAuthService.loginWithGoogleAccessToken(tokenResponse.access_token);
+
+        const { roll, ...userWithoutRole } = data.user;
+
+        const userRole = roll?.[0]?.fix_id || "Sin rol";
+
+        const userData = {
+          id: userWithoutRole.id,
+          email: userWithoutRole.email,
+          full_name: userWithoutRole.full_name,
+          role: userRole,
+        };
+
         localStorage.setItem("user", JSON.stringify(userData));
+        setEncryptedCookie("data", userData, 4);
+
         navigate("/", { replace: true });
       } catch (err: any) {
         setError(err.message || "Error al iniciar sesión con Google");

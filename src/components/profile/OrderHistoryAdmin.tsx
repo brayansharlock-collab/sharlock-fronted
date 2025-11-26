@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   List,
   Tag,
@@ -73,25 +73,75 @@ export default function OrderHistoryAdmin() {
   const [selectedDistributor, setSelectedDistributor] = useState<number | null>(null);
   const [form] = Form.useForm();
 
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const loadingRef = useRef(false);
+
   const user = getDecryptedCookie("data");
 
-  const loadOrders = async (fix_id_filter?: string) => {
+  const loadOrders = async (reset = false, fix_id_filter?: string) => {
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
     setLoading(true);
+
     try {
-      const results = await orderService.getOrderHistory(
-        fix_id_filter ? { fix_id_filter } : undefined
-      );
-      setOrders(results);
+      const currentPage = reset ? 1 : page;
+
+      const results = await orderService.getOrderHistory({
+        fix_id_filter,
+        page: currentPage,
+        page_size: 10,
+      });
+
+      if (reset) {
+        setOrders(results);
+      } else {
+        setOrders((prev) => [...prev, ...results]);
+      }
+
+      // si vienen menos de 10 → no hay más
+      setHasMore(results.length === 10);
+
+      if (!reset) {
+        setPage((prev) => prev + 1);
+      }
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadOrders(activeKey);
+    setPage(1);
+    setHasMore(true);
+    loadOrders(true, activeKey);
   }, [activeKey]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!hasMore || loadingRef.current) return;
+
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      if (scrollY + windowHeight >= documentHeight - 500) {
+        loadOrders(false, activeKey);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasMore, activeKey]);
+
+  const handleLoadMore = () => {
+    if (hasMore && !loadingRef.current) {
+      loadOrders(false, activeKey);
+    }
+  };
 
   const getStatusColor = (fix_id_filter: number) => {
     switch (fix_id_filter) {
@@ -141,7 +191,7 @@ export default function OrderHistoryAdmin() {
 
       setOpenModal(false);
       setSelectedOrder(null);
-      loadOrders(activeKey);
+      loadOrders(true, activeKey);
     } catch (error: any) {
       console.error("Error al crear guía:", error);
       message.error("No se pudo generar la guía. Inténtalo nuevamente.");
@@ -193,7 +243,7 @@ export default function OrderHistoryAdmin() {
 
                   <Collapse
                     ghost
-                    style={{ marginTop: 8, background: "#dbd5cb62",  border: "1px solid #ab9a78ff", }}
+                    style={{ marginTop: 8, background: "#dbd5cb62", border: "1px solid #ab9a78ff", }}
                     expandIconPosition="end"
                   >
                     <Panel header="Ver productos" key="1">
@@ -462,7 +512,11 @@ export default function OrderHistoryAdmin() {
           </div>
         </Form>
       </Modal>
-
+      {hasMore && (
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <Button onClick={handleLoadMore} disabled={loading}>Cargar más</Button>
+        </div>
+      )}
     </div>
   );
 }
